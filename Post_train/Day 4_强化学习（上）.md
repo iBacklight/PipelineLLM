@@ -23,13 +23,14 @@
 
 这里简单提一句：***为什么说 RL 是“最优控制”问题？*** 在经典最优控制里，我们给定系统动力学 $x_{t+1}=f(x_t,u_t)$ 与代价 $c(x_t,u_t)$，目标是选择控制序列 $\{u_t\}$ 使累计代价最小（或回报最大）。在 **RL** 中，系统动力学一般**未知**且**随机**，用 **MDP** 近似；控制律就是**策略** $\pi(a|s)$。RL 的核心就是通过交互**求解最优控制律**，而它与动态规划（DP）的数学纽带就是**贝尔曼（Bellman）最优性原则**：最优策略满足一个自洽的最优子结构，进而导出**贝尔曼方程**与相应的改进/评估算子。所以说，要学习强化学习，首先要对控制问题有所了解。
 
-接下来让我们从数学角度, 并且尽量用简单的数学语言从控制角度来理解这一过程。当然如果你对数学原理不太感兴趣，也可以直接跳过这一节，到后面不太理解的部分再返回来查看。很多的数学原理，都来自于现代RL之父Richard S. Sutton（老爷子正好在笔者所在的大学任教 lol）的RL圣经 [1], 推荐拜读。
+接下来让我们从数学角度, 并且尽量用简单的数学语言从控制角度来理解这一过程。当然如果我们对数学原理不太感兴趣，也可以直接跳过这一节，到后面不太理解的部分再返回来查看。很多的数学原理，都来自于现代RL之父Richard S. Sutton（老爷子正好在笔者所在的大学任教 lol）的RL圣经 [1], 推荐拜读。
 
 -----
 
 ### 0.1 马尔可夫过程 Markov Decision Process (MDP)
 
 一个 RL 问题通常被建模为 **马尔可夫决策过程 (MDP)**：
+
 $$
 \mathcal{M} = (\mathcal{S}, \mathcal{A}, P, R, \gamma)
 $$
@@ -42,6 +43,7 @@ J(\pi)=\mathbb{E}_{\pi}\Big[\sum_{t=0}^{\infty}\gamma^t\, r_t\Big].
 $$
 
 马尔可夫性（Markov Property）指出：在一个随机过程中，**给定当前状态和当前动作后，下一步的结果与更久远的历史无关**。换句话说，系统的未来只依赖于现在，而与过去无关。由此可知，**存在一种仅依赖当前状态的最优策略（Markov policy）**。在完全可观测的马尔可夫决策过程（MDP）中，**最优策略无需记忆历史信息**。对于一阶马尔可夫过程而言，**环境动力学满足这样的条件**：下一步的状态只取决于当前的状态与动作，这正对应于前面提到的**转移概率**：
+
 $$
 P(s_{t+1}\mid s_{0:t}, a_{0:t})=P(s_{t+1}\mid s_t, a_t)
 $$
@@ -75,23 +77,27 @@ $$
 - 在位置 `0`：同理，$V(0) = 1 + V(1) = 3$。
 
 我们实际上在做一种**向后推导（backward induction）**：
+
 $$
 V(s) = c(s, a) + V(s')
 $$
+
 这表示**当前位置的最优代价**等于“执行当前动作的代价”加上“下一状态的最优代价”。这就是 **Bellman 最优性方程在确定性环境下的形式**。
 
 <br>
 
 #### 0.2.2 变成随机情况（General MDP）
 
-然而现实世界中的动作往往是**不确定的**。例如，你尝试“向右”移动，可能只有 80% 的成功率，还有 20% 的概率原地不动。因此，下一步的“最优未来”就不再是一个固定值，而是一个**期望值**。换句话说：
+然而现实世界中的动作往往是**不确定的**。例如，我们尝试“向右”移动，可能只有 80% 的成功率，还有 20% 的概率原地不动。因此，下一步的“最优未来”就不再是一个固定值，而是一个**期望值**。换句话说：
 
 > **当前价值 = 即时回报 + 折扣因子 × 下一状态价值的期望**
 
 也就是 Bellman 方程在随机环境下的形式：
+
 $$
 V(s) = \mathbb{E}_{a, s'} [r(s,a) + \gamma V(s')]
 $$
+
 这意味着，状态的价值要综合考虑每个可能动作、每个可能转移结果的“加权未来”。我们来看一个直观例子：**带折扣奖励的线性格子。**设想一条简单的路径：`0—1—2—3(终点)`
 
 - 到达终点 `3` 时奖励为 **+10**；
@@ -100,6 +106,7 @@ $$
 - 动作“向右”总能成功。
 
 我们从终点向前推导（backward induction）：
+
 $$
 \begin{aligned}
 V(3) &= 10 \quad\text{(终点的价值就是奖励)}\\
@@ -108,6 +115,7 @@ V(1) &= 0 + 0.9 \times V(2) = 8.1\\
 V(0) &= 0 + 0.9 \times V(1) = 7.29
 \end{aligned}
 $$
+
 这一步步的“用下一状态价值更新当前状态价值”，就是一次 **Bellman 备份（Bellman Backup）**。也可以理解为在做**策略评估 / 价值迭代（Value Iteration）**。 这个“用自己的一部分估计来更新自己”的过程，正是所谓的 **自举（Bootstrapping）**。如果有多个动作可选，我们会选择让 `即时回报 + γ * 下一状态价值` **最大的动作**，这就是**控制**。我们发现，马尔可夫性保证“**给定现在，就能把未来写成条件期望**”，Bellman 正是把“总价值”拆成“当前收益 + 折扣后的**下一状态价值**”， 二者不谋而合。不过，这里可能有一个疑问：
 
 > “Bellman 方程里写的都是‘未来的价值’。那我们站在现在，根本看不到未来，怎么知道它的值？ 又怎么能在不知道未来的情况下，用它来更新或学习呢？”
@@ -116,7 +124,7 @@ $$
 
 > 当前状态的价值 = 即时奖励 + 折扣 × 未来状态的价值期望
 
-也就是说，它告诉你：
+也就是说，它告诉我们：
 
 - 真正的最优价值函数 $V^*$ 必须满足这个关系；
 - 但在学习过程中我们并不知道 $V^*$，所以要**假设一个近似的 $V$**，然后
@@ -125,13 +133,13 @@ $$
 这就是所谓的 **fixed-point learning（固定点学习）**。我们的目标即是在这个过程中不断修正价值函数。举个例子：想象我们在玩一款游戏，目标是拿到尽量多的金币。虽然游戏进行我们发现：
 
 - 一开始在玩的过程中，我们不知道未来能拿多少金币。
-- 但你每玩一局，就能知道：“当前这一步 + 后面那几步一共拿了多少”金币。
+- 但我们每玩一局，就能知道：“当前这一步 + 后面那几步一共拿了多少”金币。
 
-如果你反复玩很多次（这实际上就是采样轨迹），你就能**估计**：
+如果我们反复玩很多次（这实际上就是采样轨迹），我们就能**估计**：
 
 > “我在状态 S 下，平均能拿到多少金币。”
 
-于是你对每个状态都有一个估计值 $V(s)$。下一次玩到同样的状态，你又获得了一个新的“实际回报”，用多次类似的反馈你就可以**修正你的估计**：
+于是我们对每个状态都有一个估计值 $V(s)$。下一次玩到同样的状态，我们又获得了一个新的“实际回报”，用多次类似的反馈我们就可以**修正我们的估计**：
 
 > 如果现实比我估的好，就把 $V(s)$ 调高；如果现实比我估的差，就把 $V(s)$ 调低。
 
@@ -146,12 +154,15 @@ $$
 > “最终学到的价值函数，往它套一次‘一步+未来’的更新，应该不再改变（达到固定点）。”
 
 我们之前只是笼统地从语言角度简单了解了Bellman。从数学角度出发，我们规定**价值函数为$V^\pi(s)$（也可以说是给定策略 $\pi$）**。结合上面的内容，在一般的MDP假设下，期望 Bellman（给定策略的自洽条件）方程：
+
 $$
 \boxed{
 V^\pi(s)=\mathbb E_{a\sim\pi(\cdot|s)}\Big[\ \mathbb E_{s'\sim P(\cdot|s,a)}\big[r(s,a)+\gamma V^\pi(s')\big]\ \Big]
 }
 $$
+
 而我们的目标，也就是最优性 Bellman（实际控制问题的自洽条件）方程：
+
 $$
 \boxed{
 V^*(s)=\max_{a}\ \mathbb E_{s'\sim P}\big[r(s,a)+\gamma V^*(s')\big]
@@ -188,16 +199,18 @@ $$
 **1）出发点：最优性 Bellman 与“解方程”的思路。**
 
 目标是在未知模型的情况下逼近一个 $Q^*(s,a)$，它满足最优性 Bellman：
+
 $$
 Q^*(s,a)=\mathbb E_{s'\sim P}\big[r(s,a)+\gamma\max_{a'}Q^*(s',a')\big].
 $$
+
 思路：把右侧的**期望**用**样本一次抽样**近似，用迭代把 $Q$ 推向该固定点。
 
 **2） 核心：时序差分（TD）误差，这不是Value-based独有，但是需要先了解**
 
 我们使用agent与环境交互拿到样本 `s, a, r, s'`，就用`新的估计 ≈ r + γ * 旧的下一状态估计`。这一步就是把“数学期望”换成了“**一次抽样**”——**样本版的 Bellman 备份**。在数学原理上，我们用一个更精确的说法描述上面的“修正”：
 
-- 在时间 $t$，你执行了动作 $a_t$，获得奖励 $r_t$，到达新状态 $s_{t+1}$。我们当前对状态的估计是 $V(s_t)$，但根据刚刚的经验，你“看到”的更真实的回报是
+- 在时间 $t$，我们执行了动作 $a_t$，获得奖励 $r_t$，到达新状态 $s_{t+1}$。我们当前对状态的估计是 $V(s_t)$，但根据刚刚的经验，我们“看到”的更真实的回报是
 
 $$
 r_t + \gamma V(s_{t+1})
@@ -209,26 +222,30 @@ $$
 \delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)
 $$
 
-​	就是**“预测误差”（TD 误差）**。你用它去修正估计：
+​	就是**“预测误差”（TD 误差）**。我们用它去修正估计：
+
 $$
 V(s_t) \leftarrow V(s_t) + \alpha\, \delta_t
 $$
+
 ​	这里的 α 是学习率。
 
-- 于是，虽然你根本不知道未来的“真值”，但你可以用**一次次的经验样本**，一点点地把自己往那个“自洽点”上推过去。直觉上，$\delta_t>0$ 说明“现实比我估得好”，就上调；反之下调。
+- 于是，虽然我们根本不知道未来的“真值”，但我们可以用**一次次的经验样本**，一点点地把自己往那个“自洽点”上推过去。直觉上，$\delta_t>0$ 说明“现实比我估得好”，就上调；反之下调。
   
 
 **3）代表算法：Q-Learning（off-policy，逼近最优性 Bellman）**
 
-Q-learning是典型的value-based的RL算法，它旨在训练一个动作回报函数Q来评估当前动作的优劣。可能你会纳闷：为什么变成Q了，不是价值函数V吗？简单地讲：
+Q-learning是典型的value-based的RL算法，它旨在训练一个动作回报函数Q来评估当前动作的优劣。可能我们会纳闷：为什么变成Q了，不是价值函数V吗？简单地讲：
 
-- **V(s)** 价值回报函数：只告诉你“在状态 s 下，按当前/最优策略继续走的期望回报有多大”；
-- **Q(s,a)** 动作回报函数：直接告诉你“在状态 s 里，**立刻选动作 a** 会有多大期望回报”。
+- **V(s)** 价值回报函数：只告诉我们“在状态 s 下，按当前/最优策略继续走的期望回报有多大”；
+- **Q(s,a)** 动作回报函数：直接告诉我们“在状态 s 里，**立刻选动作 a** 会有多大期望回报”。
 
 **V(s)** 只告诉“这个状态总体有多好”，但**不区分不同动作**。若用 $V$ 来选动作，我们需要再算 $\mathbb E_{s'|s,a}[\,r+\gamma V(s')\,]$ 去比较各 $a$，这在没有模型，**不知道转移概率 $P$** 时很别扭——要么建模 $P$，要么为每个 $a$ 额外采样估计。**Q(s,a)** 则把“动作优劣”编码在函数里，而这正是无模型环境里**做动作决策**所必需的信号：
+
 $$
 \text{选动作} \;\Rightarrow\; a = \arg\max_a Q(s,a)
 $$
+
 接下来我们介绍Q Learning[2]的算法，它的伪代码是：
 
 ```
@@ -247,18 +264,24 @@ for each episode:
 ```
 
 *a) 基本原理*：具体来看，这里我们知道在value-based RL中最优动作价值满足：
+
 $$
 Q^*(s,a)=\mathbb E\big[r+\gamma\max_{a'} Q^*(s',a')\mid s,a\big].
 $$
+
 将右侧的期望用一次采样近似，构造 TD 目标：
+
 $$
 y_t = r_t + \gamma \max_{a'} Q(s_{t+1},a').
 $$
+
 用 TD 误差更新：
+
 $$
 \delta_t = y_t - Q(s_t,a_t),\qquad
 Q(s_t,a_t)\leftarrow Q(s_t,a_t) + \alpha\,\delta_t.
 $$
+
 这就是 **样本版最优性 Bellman 备份**。这就是Q-learning最经典的算法基础，也是Value-based RL的基础。
 
 *b）Exploration vs Exploitation* ：那么Q-learning的策略具体是怎么产生的呢？这里就要提到非常经典的RL本质：***Exploration vs Exploitation （探索加利用）***。
@@ -267,10 +290,13 @@ $$
 - **探索**：选择**不那么确定/少尝试**的动作，以**获取信息**、修正估计，从而**长期更优**。
 
 在Q-learning中，我们的目标策略选择是***贪心算法***：
+
 $$
 \pi_{\text{greedy}}(s)=\arg\max_{a} Q(s,a).
 $$
+
 也就是说，模型在推理阶段总是会选择当前回报最大的动作。但是，在和***环境互动采样训练***的时候，我们通常采用不同的行为策略—**ϵ-greedy**， 对应的分布写成“以动作为主体”：
+
 $$
 a_t =
 \begin{cases}
@@ -278,6 +304,7 @@ a_t =
 \text{any } a\in\mathcal A, & \text{with prob } \varepsilon
 \end{cases}
 $$
+
 代码：
 
 ```python
@@ -299,14 +326,18 @@ else:                                 # with probability 1-ε → greedy
 - **目标策略（target policy，记作 $\pi$**）：我们真正**想评估/想优化**的策略。
 
 **off-policy 学习**：允许 $\mu \neq \pi$。也就是说，数据可以由一套策略产生（方便探索、复用旧日志），而学习/评估的对象是**另一套**策略（常是“更贪心”的目标策略）。正如在(b)小节提到的那样， Q-learning在学习阶段的目标策略是$\pi_{\text{greedy}}$，但是行为策略却是ϵ-greedy。但是要记住，无论 $a_{t+1}$ 实际上是怎么选的，Q-learning 的**目标**始终用 **$\max_{a'}$**（即目标策略）来“对齐未来”，更新式和上面相同：
+
 $$
 Q(s_t,a_t)\leftarrow Q(s_t,a_t)\;+\;\alpha\,\big[\,r_t+\gamma\max_{a'}Q(s_{t+1},a')-Q(s_t,a_t)\big].
 $$
+
 这里的$a'$不是实际动作，而是策略假设的当前时刻的最有动作，然而行为上可能还在探索（随机选取动作）。这正是 **off-policy**，**行为**由 $\mu$ 决定，**学习指向** $\pi_{\text{greedy}}$。与之相对，**on-policy** 要求 $\mu=\pi$​：采样和优化的是同一策略（如 SARSA、REINFORCE、PPO等）。比如SARSA算法，它是学习**当前行为策略**的价值，更新目标用**实际采样到的下一个动作** $a_{t+1}$：
+
 $$
 y_t^{\text{SARSA}}=r_t+\gamma\,Q(s_{t+1},a_{t+1})\\
 Q(s_t,a_t)←Q(s_t,a_t)+α[y_t^{\text{SARSA}}−Q(s_t,a_t)]
 $$
+
 **行为差异**
 
 - **SARSA 更“保守”**：目标包含实际的探索动作 $a_{t+1}$，遇到风险高的区域会学到“别太激进”，在如 Cliff-Walking 等任务上更安全。
@@ -356,10 +387,12 @@ def update_q_value(self, state, action: int, reward: float, next_state, done: bo
 **DQN = 用深度神经网络实现的 Q-learning**（Deep Q-Learning），是一种结合了深度学习和Q学习的深度强化学习算法，它使用深度神经网络来逼近高维状态空间中的Q值函数，从而解决传统Q学习中状态空间过大的问题。DQN的出现极大地推动了深度强化学习的发展，能够处理复杂的任务，如玩Atari游戏、图像处理等。 
 
 - **算法本质**：仍是 **off-policy** 的时序差分，最优性 Bellman 目标不变
+
   $$
   y=r+\gamma \max_{a'} Q_{\bar\theta}(s',a'),\quad 
   \mathcal{L}(\theta)=\big(Q_\theta(s,a)-y\big)^2
   $$
+
   只是用 **神经网络** $Q_\theta(s,a)$ 近似动作价值。
 
 - **动作选择**：训练时常用 $\epsilon$-greedy；部署时用 $\arg\max_a Q_\theta(s,a)$。
@@ -384,42 +417,55 @@ def update_q_value(self, state, action: int, reward: float, next_state, done: bo
 我们还是从Bellman方程入手，
 
 **1）从 Bellman 到策略优化**：给定策略 $\pi$，以及其参数$\theta$，那么价值函数可以写成
+
 $$
 V^\pi(s)=\mathbb E_{a\sim\pi,\,s'\sim P}\!\big[r(s,a)+\gamma V^\pi(s')\big].
 $$
+
 同时，因为我们之前定义了优化问题的目标是 $J(\pi_\theta)=\mathbb E_\pi[\sum \gamma^t r_t]$​ ，其中隐含的轨迹分布
+
 $$
 p_\theta(\tau)=p(s_0)\prod_{t=0}^{T-1} \underbrace{P(s_{t+1}\mid s_t,a_t)}_{\text{环境转移，不依赖 }\theta}\,\underbrace{\pi_\theta(a_t\mid s_t)}_{\text{策略}}
 $$
+
 对于概率求解， 我们使用**对数导数技巧（score function trick）**求目标函数的梯度（可以点击[这篇博文](https://zhuanlan.zhihu.com/p/614115887)看比较详细的推理过程），来优化该问题：
+
 $$
 \nabla_\theta J
 = \mathbb{E}_{\tau}\!\Big[R(\tau)\,\nabla_\theta \log p_\theta(\tau)\Big]
 = \mathbb{E}_{\tau}\!\Big[R(\tau)\sum_{t=0}^{T-1}\nabla_\theta \log \pi_\theta(a_t\mid s_t)\Big]
 $$
+
 因为 $P(s_{t+1}\!\mid s_t,a_t)$ 与 $\theta$ 无关，故 $\nabla_\theta \log P=0$。把回报“按时间分摊”到每个时刻，得到常用形态 [4]：
+
 $$
 \nabla_\theta J(\pi_\theta)
 =\mathbb{E}_{s\sim d^\pi,\ a\sim\pi_\theta}\!\Big[\nabla_\theta \log \pi_\theta(a|s)\,\underbrace{Q^\pi(s,a)}_{\text{动作价值}}\Big].
 \tag 1
 $$
+
 这说明：Policy based RL也**不需要显式环境模型**，就像上面估计Q一样，只要能采样轨迹就能估计梯度。而事实上，从数学角度看，我们可以**减去任意只依赖状态的函数** $b(s)$（称为**基线**）而不改变梯度的**期望**：
+
 $$
 \nabla_\theta J
 =\mathbb{E}\!\Big[\nabla_\theta \log \pi_\theta(a|s)\,\big(Q^\pi(s,a)-b(s)\big)\Big].
 $$
+
 **为什么这样做是无偏的？** 因为对任意 $b(s)$：
+
 $$
 \mathbb{E}_{a\sim\pi_\theta}\!\big[\nabla_\theta \log \pi_\theta(a|s)\,b(s)\big]
 = b(s)\,\nabla_\theta \sum_a \pi_\theta(a|s)
 = b(s)\,\nabla_\theta 1
 = 0.
 $$
+
 也就是说基线是“与动作无关的常数项”。到这一步，经典的策略梯度算法就可以被提出了。
 
 **2）Policy-gradient： REINFORCE**
 
 a） 蒙特卡罗回报（Monte Carlo return）：在纯采样（无模型）下，**用经验回报近似 $Q^\pi$**。我们定义return（$G_t$）：
+
 $$
 G_t \;\triangleq\; \sum_{k=0}^{T-t-1}\gamma^k r_{t+k} \;\approx\; Q^\pi(s_t,a_t)
 $$
@@ -427,13 +473,17 @@ $$
 - **无偏但方差大**：$G_t$ 只靠采样，没有 bootstrapping [4]。
 
 b) REINFORCE 刚被提出来的时候，其表达是
+
 $$
 \theta \leftarrow \theta + \alpha\,\nabla_\theta\log\pi_\theta(a_t\mid s_t)\,G_t
 $$
+
 然后当我们把基线（如按 batch 平均）加入，就变成了**REINFORCE with baseline**
+
 $$
 \theta \leftarrow \theta + \alpha\,\nabla_\theta\log\pi_\theta(a_t\mid s_t)\,\big(G_t - b(s_t)\big)
 $$
+
 该方法可以用来缓解方差问题。
 
 
@@ -441,23 +491,29 @@ $$
 **3）Actor–Critic（AC）架构**
 
 在 **REINFORCE** 里我们用 **蒙特卡罗回报** $G_t$ 近似 $Q^\pi$，梯度无偏但**方差大**(因为在理论上，如果我们能获得**真实的动作价值函数** Q_pi,那么梯度估计就是无偏的；但是$G_t$ 是一个**随机变量的累加和**，每个随机变量都受到多种不确定性因素的影响（比如环境的状态转移概率的误差，策略的概率分布也有一定的随机性），所以方差比较大)。为了解决这个问题，我们把“**一步 + 未来**”的Bellman范式写成它的**优势**（Advantage, 这一步也被称为Bellman 残差）：
+
 $$
 A^\pi(s,a)\ \triangleq\ Q^\pi(s,a)-V^\pi(s)
 \ =\ r+\gamma V^\pi(s')-V^\pi(s).
 \tag 2
 $$
-也就是说，若 $A^\pi>0$，说明“**这一步比 Bellman 预测更好**”，应增加其概率；反之减少。你会发现，这Bellman 残差不就是之前的TD error吗？没错，而且这就是**策略更新的方向信号**。于是，当我们设定基线为只与状态有关的价值函数的时候，引入(2)式，（1）可以写成：
+
+也就是说，若 $A^\pi>0$，说明“**这一步比 Bellman 预测更好**”，应增加其概率；反之减少。我们会发现，这Bellman 残差不就是之前的TD error吗？没错，而且这就是**策略更新的方向信号**。于是，当我们设定基线为只与状态有关的价值函数的时候，引入(2)式，（1）可以写成：
+
 $$
 \boxed{\ \nabla_\theta J
 =\mathbb{E}\!\big[\nabla_\theta \log \pi_\theta(a|s)\,A^\pi(s,a)\big]\ }
 \tag 3
 $$
+
 在实现里，我们用一个参数化的 **Critic** $V_\phi(s)$ 网络去近似 $V^\pi(s)$，于是
+
 $$
 \underbrace{\delta_t}_{\text{TD 误差}}
 \;=\; r_t+\gamma\,V_\phi(s_{t+1})-V_\phi(s_t)
 \;\approx\; A^\pi(s_t,a_t).
 $$
+
 这就把“理论上的优势”变成了“**一次交互就能算**”的量：$\delta_t$。再加上用 **Actor** $\pi_\theta$ 做策略更新 ，我们就得到了Actor–Critic架构的RL算法。
 
 
@@ -469,30 +525,37 @@ a）***Critic：价值评估（逼近期望 Bellman）***
 - 学 $V_\phi(s)$ 或 $Q_\phi(s,a)$。
 
 - 以状态价值为例，其参数更新遵循：
+
   $$
   \delta_t = r_t+\gamma V_\phi(s_{t+1})-V_\phi(s_t),\qquad
   \phi \leftarrow \phi - \eta \nabla_\phi\,(\delta_t)^2.
   $$
 
 - 价值函数 $V_\phi$ 的目标是估计状态的长期期望回报（即状态价值），可以被看作是真实价值的近似值。然而，真实的状态价值是未知的，因此我们需要一个目标值来训练价值函数。这个目标值通常使用GAE或类似估计值，它结合了蒙特卡洛（MC）回报和时间差分（TD）学习的优点，以在偏差和方差之间取得平衡。：
+
   $$
   \hat A_t=\sum_{l=0}^{\infty}(\gamma\lambda)^l\,\delta_{t+l},\quad
   \hat V_t = \hat A_t + V_{\phi_{old}}(s_t).
   $$
+
    $\hat{A}_t$​是通过GAE(*λ*)计算的优势估计值。λ∈[0,1] 越大越接近 MC（低偏高方差），越小越接近 TD（高偏低方差）。然而这看起来像是在估计动作Q值的回报（见2式），为什么呢？
 
   让我们重新审视GAE的概念，GAE 实际近似的是：$\hat A_t \approx G_t^\lambda - V_{\text{old}}(s_t)$ ，其中 $G_t^\lambda$ 是 **$\lambda$-return**（介于 TD 与 MC 之间的折中回报），而 $V_{\text{old}}$​ 指 模型未被更新前上一轮的值函数输出。把上式移项就得到：
+
   $$
   G_t^\lambda \;\approx\; \hat A_t + V_{\text{old}}(s_t)\ \stackrel{\Delta}{=}\ \hat V_t
   $$
+
   也就是说，$\hat V_t$ 并不是“又把被减掉的 $V$ 加回来”这么简单——它**等价于对真实回报 $G_t$** 的一个更稳的估计 $G_t^\lambda$。这一步结束后，$\hat V_t$ 就可以被detach了。
   
   注： $\hat V_t$ 有的时候也写作return $\hat R_t$ 
   
 - 我们希望 $V_\phi(s_t)$ 学到 **状态的期望回报**, 于是就用$V_\phi(s_t)$来拟合$\hat V_t$：
+
   $$
   L_{\text{value}}=\mathbb{E}\big[(V_\phi(s_t)-\underbrace{\hat V_t}_{\approx G_t^\lambda})^2\big]
   $$
+
   从表面上看，这似乎是在最小化优势估计的平方（数学上带入等于求优势平方的期望），但这里有一个关键细节：**在计算 $\hat V_t$ 时，我们使用了当前价值函数  $V_\phi(s_t)$  的值，但在优化损失函数时，$\hat V_t$  被视为常数（即梯度被阻止流向 $\hat V_t$ ）**。在实践中，当我们计算 $\hat V_t$ 时，我们使用当前价值网络的参数的当前值（记作 $ϕ_{old}$），但随后在损失函数中，我们固定 $\hat V_t$ （通过 `detach()` 或类似操作），只更新 $V_\phi(s_t)$。
   
   当然，在数值上直观一点说，在本轮优化阶段做了第一次参数更新之前，他们在数值上是等价的。其余时刻都是不同的。
@@ -502,11 +565,13 @@ a）***Critic：价值评估（逼近期望 Bellman）***
 b）***Actor：策略更新（优势驱动）***
 
 - 策略梯度：
+
   $$
   \nabla_\theta J \;=\; \mathbb E\big[\,\nabla_\theta \log \pi_\theta(a_t|s_t)\ \hat A_t\,\big].
   $$
 
 - 参数更新（单步写法）：
+
   $$
   \theta \leftarrow \theta + \alpha\,\nabla_\theta \log \pi_\theta(a_t|s_t)\ \hat A_t.
   $$
@@ -514,6 +579,7 @@ b）***Actor：策略更新（优势驱动）***
 - 常配 **熵正则** 提升探索与多样性：$+\beta\,\mathbb E[\mathcal H(\pi_\theta(\cdot|s))]$。
 
 - 实现时常用 **负损失** 写法（做最小化）并加**熵正则**稳探索：
+
   $$
   \mathcal L_{\text{actor}}
   = -\,\mathbb{E}\big[ \log \pi_\theta(a_t|s_t)\;\hat A_t \big]
@@ -533,12 +599,15 @@ b）***Actor：策略更新（优势驱动）***
 **2）PPO 的核心目标**
 
 a）几率比
+
 $$
 r_t(\theta)=\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)}
 $$
+
 用旧策略 $\pi_{\theta_{\text{old}}}$ 采样，再用 $r_t$ 做重要性加权，避免分布错配。
 
 b）Clip 目标（最常用）
+
 $$
 \boxed{\;
 \mathcal L_{\text{clip}}(\theta)=
@@ -550,6 +619,7 @@ $$
 - $\hat A_t$ 为优势（通常用 **GAE** 估计，见下）。
 
 c）KL 惩罚/约束（另一常见变体）
+
 $$
 \mathcal L_{\text{kl}}(\theta)=
 \mathbb E_t\!\big[r_t(\theta)\hat A_t\big]-\beta\,\mathbb E_t\!\big[\mathrm{KL}\big(\pi_{\theta_{\text{old}}}(\cdot|s_t)\,\|\,\pi_\theta(\cdot|s_t)\big)\big]
@@ -558,6 +628,7 @@ $$
 - $\beta$ 可**自适应**调节，使实际 KL 逼近目标 $d_{\text{target}}$（KL 太大就增大 $\beta$，太小就减小）。
 
 d）全损失（加上值函数与熵）
+
 $$
 \boxed{\;
 \max_\theta \ \mathcal L_{\text{policy}}
@@ -637,11 +708,13 @@ $$
 在上面的理论实践中，我们已经了解了PG和AC的基本原理，也简单地谈了一下PPO算法。现在让我们由浅入深探究一下PPO的原理。
 
 首先我们要知道，在之前谈到的强化学习范式里，所谓的**策略实际上就是概率**，即$\pi_{\text{old}}(\cdot\mid s)$、$\pi(\cdot\mid s)$ 分别是旧/新策略在状态 $s$ 上对动作的**概率分布**（注意，离散环境我们谈概率，连续空间中则是**概率密度**）。在上一节探究DPO的过程中，我们学习了KL散度，并且提到了PPO。KL散度实际上是描述了一种衡量策略之间差异的方法（因此也常被称为相对熵）。在实际施加它训练的时候，如果我们希望限制的是“**策略分布改了多少**”（策略分布的概率差异，或者说概率距离），就需要用到 KL 散度来测量这一差异：
+
 $$
 \mathrm{KL}\!\left(\pi_{\text{old}}(\cdot|s)\ \big\|\ \pi_\theta(\cdot|s)\right)
 = \mathbb E_{a\sim \pi_{\text{old}}}\!\left[
 \log \frac{\pi_{\text{old}}(a|s)}{\pi_\theta(a|s)}\right].
 $$
+
 结合公式，因为对数函数是单调递增的，那么直觉告诉我们，新旧策略在所有动作概率上的**相对变化**越小，KL散度也就越小；反之则越大。这给出“**信任域**（Trust Region）”思想：只允许策略在 KL 小于阈值的区域内更新，保证性能不劣化。合理调配KL阈值可以有效抑制以下两种情况：
 
 - **过冲（Overshooting）：**更新错过了奖励峰值并落入了次优策略区域
@@ -650,6 +723,7 @@ $$
 ### 2.2 信赖域策略优化算法TRPO （简述）
 
 基于KL散度的思想，Trust region policy optimization（TPRO）[7] 算法被提出。具体来说，TRPO从策略梯度定理出发，提出了一种量化策略的办法——把目标写成在旧策略分布上的期望：
+
 $$
 L_{\pi_{\text{old}}}(\theta)
 = \mathbb E_{s\sim d^{\pi_{\text{old}}},\, a\sim \pi_{\text{old}}}\!\bigg[
@@ -657,6 +731,7 @@ L_{\pi_{\text{old}}}(\theta)
 \bigg]
 = \mathbb E\big[r_\theta(s,a)\,A^{\text{old}}(s,a)\big],
 $$
+
 其中几率比 $r_\theta=\pi_\theta/\pi_{\text{old}}$，也称为**重要性采样**；优势的估计仍旧采用了GAE的计算方法。如果我们仔细去思考这个目标函数，会发现这是一种“**替代目标**（surrogate objective）”：用旧分布下估计到的优势，衡量新策略的改进趋势。真实性能改进可用一个单调改进下界界定：若替代目标增大，则真实回报提升。
 
 基于此，TRPO提出了受限优化（Constrained Optimization）和信任域（Trust Region）的概念，
@@ -689,12 +764,13 @@ TRPO可以说是策略梯度算法的里程碑之一，其开拓的重要性采�
 #### 2.3.1 重要性采样 (Importance Sampling)
 
 重要性采样并不是PPO提出的。然而，当我们把 AC 的策略损失(3)式 $-\mathbb E[\log\pi_\theta\,\hat A]$ 换成 IS 形式（这等价于在旧分布下求期望），
+
 $$
-\mathcal L_{\text{PG}}(\theta)
-= \mathbb E_t\big[r_t(\theta)\,\hat A_t\big],
+\mathcal L_{\text{PG}}(\theta) = \mathbb E_t\big[r_t(\theta)\,\hat A_t\big],
 \quad 
 r_t(\theta)=\frac{\pi_\theta(a_t|s_t)}{\pi_{\text{old}}(a_t|s_t)}.
 $$
+
 **这一步让我们可以对同一批 $(s_t,a_t)$** 进行 **多 epoch 小批训练**，而不严重偏离 on-policy（$\pi_{\text{old}}$ 冻结；$r_t$ 做校正）。
 
 #### 2.3.2 PPO 基于KL-penalty
@@ -719,6 +795,7 @@ $$
 #### 2.3.3 PPO基于Clip（主流）
 
 PPO的另外一种变体是Clip版本，实验证明其效果优于PPO KL-penalty。在这一变体中，我们不在启发式地探索限制KL散度大小的β ，而是直接限制策略可以变化的范围。具体来说，Clip对每个样本都做“剪切”：
+
 $$
 \boxed{
 \mathcal L_{\text{clip}}(\theta)
@@ -729,6 +806,7 @@ $$
 \right].
 }
 $$
+
 解释：
 
 - 若期望优势 $\hat A_t>0$，我们希望 $r_t\!\uparrow$（增大该动作概率），但超出 $1+\epsilon$ 后**收益不再增长**；
@@ -755,15 +833,20 @@ $$
 **1) 为什么加价值函数的误差项？**
 
 PPO 用的是 **优势 $\hat A_t$** 做策略更新，而 $\hat A_t$ 是由 **Critic 的 $V_\phi(s)$** 通过 TD/GAE 算出来的：
+
 $$
 \delta_t=r_t+\gamma V_\phi(s_{t+1})-V_\phi(s_t),\quad
 \hat A_t=\text{GAE}(\{\delta\})
 $$
+
 如果 $V_\phi$ 估得偏、抖动大，$\hat A_t$ 就**噪声大且带偏**，Actor 会朝“错的方向”迈步，训练不稳。因此要**同步训练 Critic**，让它逼近更好的目标（折扣回报或 $\hat V_t=\hat A_t+V_\phi(s_t)$）：
+
 $$
 \mathcal L_{\text{value}}=\mathbb E\big[(V_\phi(s_t)-\hat V_t)^2\big]
 $$
+
 把它乘权重并**减掉**进入总目标（因为我们最大化总目标）：
+
 $$
 \max_\theta\;\underbrace{\mathcal L_{\text{policy}}}_{\text{PPO-Clip/KL}}
 \;-\;c_v\,\mathcal L_{\text{value}}
@@ -774,27 +857,35 @@ $$
 **2) 为什么加熵正则？**
 
 若只追逐当前优势，策略会很快把概率**压到单一动作**（分布塌缩），探索减少、易陷局部最优。**熵正则**鼓励策略保持一定**随机性/多样性**：
+
 $$
 \mathcal L_{\text{entropy}}=\mathbb E\big[\mathcal H(\pi_\theta(\cdot|s_t))\big]
 $$
+
 一般的熵的计算方法是：
+
 $$
 \mathcal H(P) = - \sum_{i=1}^{V} P(x_i) \cdot \log P(x_i)
 $$
+
 这里的是P选择第 \( i \) 个动作( x_i \) 的概率。举个例子：假设在一个极其简化的词汇表（只有3个token：A, B, C）上，模型给出的概率分布为：
 
 - P(A) = 0.2，P(B) = 0.3，P(C) = 0.5
 
 那么该分布的熵为：
+
 $$
 \mathcal H(P) = - [0.2 * \log(0.2) + 0.3 * \log(0.3) + 0.5 * \log(0.5)] \approx -[-0.322 -0.361 -0.347] \approx 1.03
 $$
+
 知道了以后，我们就把它并以权重加入总目标：
+
 $$
 \max_\theta\;\mathcal L_{\text{policy}}
 \;-\;c_v\,\mathcal L_{\text{value}}
 \;+\;c_e\,\mathcal L_{\text{entropy}}
 $$
+
 直觉：给“更均匀”的策略一点奖励，**防早收敛**、**提升探索**，在连续动作里还能防止协方差“收缩成零”。更加细节的熵的计算方法，请见Appendix。
 
 总结一下算法流程：
@@ -851,15 +942,19 @@ PPO是 On-policy 的吗？没错，而且这就是它的本质。人们对PPO的
 #### 1) 离散动作（Categorical / Softmax）
 
 策略给出每个动作的概率 $p_i=\pi_\theta(a_i\mid s)$，**给每个动作 $a_i$** 一个打分/偏好（logit）$z_i = f_\theta(s, a_i)$，则
+
 $$
 \pi_\theta(a_i\mid s)
 =\frac{\exp(z_i)}{\sum_{j=1}^{|\mathcal A|}\exp(z_j)}.
 $$
+
 这就是**Softmax 策略**的标准公式。我们接下来定义其策略熵（以自然对数为底，单位 *nats*）：
+
 $$
 \mathcal H(\pi_\theta(\cdot\mid s))
 = -\sum_{i=1}^{|\mathcal A|} \pi_\theta(\cdot\mid s) \,\log \pi_\theta(\cdot\mid s) .
 $$
+
 这里数值稳定的实现要点为：
 
 - 先算 `logp = log_softmax(logits)`，再 `p = exp(logp)`；
@@ -869,6 +964,7 @@ $$
 #### 2) 连续动作（高斯策略，常见：独立对角协方差）
 
 策略输出均值和对数标准差：$\mu_\theta(s)\in\mathbb R^k,\ \log\sigma_\theta(s)\in\mathbb R^k$。若动作 $a\sim \mathcal N(\mu, \mathrm{diag}(\sigma^2))$，**多元高斯熵**有闭式：
+
 $$
 \mathcal H(\pi_\theta(\cdot\mid s))
 = \tfrac{1}{2}\,\log\!\big((2\pi e)^k\,|\Sigma|\big)

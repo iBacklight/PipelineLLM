@@ -69,9 +69,9 @@ $$
 传统 RLHF的做法是，先训奖励模型（RM）拟合偏好， 再用 PPO 等 RL 优化策略 + KL 正则。
 
 **DPO**（Direct Preference Optimization）则跳过显式 RM，直接把偏好约束写成一个**监督式目标**来优化策略，训练稳定、便宜、易落地。换个说法，DPO是 从“最大化奖励–KL”的RL目标出发，通过数学变换把“**奖励差**”用**参考策略的对数几率差**替代，得到一个对**偏好对**的**二元逻辑回归**损失。于是我们无需显式的RM，可以直接对策略做**pairwise**监督优化。对一个样本 $(x, y^+, y^-)$，DPO 的 loss 常写作：
+
 $$
-\mathcal{L}_{\text{DPO}}(\theta)
-= -\log \sigma\!\big(
+\mathcal{L}_{\text{DPO}}(\theta) = -\log \sigma\!\big(
 \beta\,[\,\underbrace{\log \pi_\theta(y^+|x)-\log \pi_\theta(y^-|x)}_{\text{策略对数几率差}}
 -\underbrace{\log \pi_{\text{ref}}(y^+|x)+\log \pi_{\text{ref}}(y^-|x)}_{\text{参考校正/隐式KL}}]\big).
 $$
@@ -92,9 +92,11 @@ $$
 #### 3.2.1 前置概念：KL散度
 
 **KL 散度（Kullback–Leibler divergence**衡量两个分布 $p,q$ 的差异：
+
 $$
 D_{\mathrm{KL}}(p\Vert q)=\sum_{y} p(y)\,\log\frac{p(y)}{q(y)} \quad(\text{或 } \mathbb{E}_{y\sim p}[\log p(y)-\log q(y)])
 $$
+
 他表示p分布对于q分布的相似程度
 
 - $D_{\mathrm{KL}}\ge 0$（Jensen不等式），且当且仅当 $p=q$ 时为 0， 越接近0，表明他们越相似。
@@ -102,6 +104,7 @@ $$
 - 在对齐里，KL 常用来**“拽回去”**：不让新策略 $\pi$ 偏离“参考策略” $\pi_{\text{ref}}$ 太远（比如 SFT 模型），避免输出风格/安全性跑飞。
 
 在RLHF中（下一节），KL散度常被用于正则化策略上。例如，在每个输入 $x$ 上，我们希望策略 $\pi(\cdot|x)$ **既能拿到高“奖励” $r(x,y)$，又别离参考 $\pi_{\text{ref}}(\cdot|x)$ 太远**。一个经典的一步式目标是（类似PPO-KL范式）：
+
 $$
 \max_{\pi(\cdot|x)}\;\; \mathbb{E}_{y\sim \pi(\cdot|x)}[\,r(x,y)\,]\;-\;\beta\;D_{\mathrm{KL}}\!\left(\pi(\cdot|x)\,\big\Vert\,\pi_{\text{ref}}(\cdot|x)\right) =\\
 \min_{\pi(\cdot|x)}\;\; \beta\;D_{\mathrm{KL}}\!\left(\pi(\cdot|x)\,\big\Vert\,\pi_{\text{ref}}(\cdot|x)-\mathbb{E}_{y\sim \pi(\cdot|x)}[\,r(x,y)\,]\;\;)\right.
@@ -111,19 +114,21 @@ $$
 >论文中写道 [3]： During the RL phase, the learned reward function is used to provide feedback to the language model. Following prior works [17, 18], the optimization is formulated as (1)
 
 这里 $\beta>0$ 控制“保守 vs 激进”。$\beta$​ 大：更贴近参考；小：更敢改变，远离参考。这里，对给定的 $x$，
+
 $$
 D_{\mathrm{KL}}\!\big(\pi(\cdot|x)\,\|\,\pi_{\rm ref}(\cdot|x)\big)
 =\mathbb{E}_{y\sim \pi(\cdot|x)}
 \!\left[\log \frac{\pi(y|x)}{\pi_{\rm ref}(y|x)}\right].
 $$
 
-
 #### 3.3.2 前置概念：BT偏好数据模型
 
 然而现实里，我们很难有显式 $r(x,y)$，但通常有**偏好对数据** $(x,y^+,y^-)$，即对同一 $x$，标注者认为“$y^+$ 胜过 $y^-$”。这时候可以使用一个常用模型——***Bradley–Terry Model***[1]，该公式原文有详细讲解[3]:
+
 $$
 \Pr(y^+ \succ y^- \mid x)\;=\;\sigma\!\big(r(x,y^+)-r(x,y^-)\big),
 $$
+
 这是说，我们规定：
 
 - 每个候选输出 $y$ 有一个“效用/得分” $r(x,y)$。
@@ -133,36 +138,45 @@ $$
 这个就是 pairwise logistic preference learning 的**标准写法**。其实，如果我们结合**SFT中交叉熵对于最大似然函数**的应用，就能更直观地理解(可选了解)：
 
 1. **最大似然（MLE）目标**： 给定标注者的观察结果“$y^+$ 胜过 $y^-$”，我们希望最大化模型对该事件的概率：
+
    $$
    \max_\theta \;\;\log \Pr_\theta(y^+ \succ y^- \mid x)
    = \max_\theta \;\;\log \sigma(r_\theta(x,y^+) - r_\theta(x,y^-)).
    $$
 
 2. **对数似然转损失**：取负号就是训练损失：
+
    $$
    \mathcal{L}(\theta) = -\log \sigma(r_\theta(x,y^+) - r_\theta(x,y^-)).
    $$
 
 3. **与交叉熵的等价性**：注意，这其实就是**二分类的交叉熵损失**：我们要区分“$y^+$ 优于 $y^-$”（标签=1）与“相反情况”（标签=0）。如果写成通用形式：
+
    $$
    \mathcal{L}(\theta) = \text{CE}\Big(\sigma(r_\theta(x,y^+)-r_\theta(x,y^-)), \;1\Big),
    $$
+
    其中 CE 是二元交叉熵：
+
    $$
    \mathcal{L}_{CE}(y, \hat{y}) = -\big[ y \log \hat{y} + (1-y)\log(1-\hat{y}) \big].
    $$
+
    这里就可以理解， $\sigma(r_\theta(x,y^+)-r_\theta(x,y^-))$相当于**在输入 $x$ 下，模型判定候选输出 $y^+$ 优于 $y^-$ 的概率**。这个值越接近1越好。（因为是概率，所以最大就是1）
 
 #### 3.3.3 DPO loss 公式推导
 
 我们接下来正式进行推导。从原文中看，作者从强化学习微调阶段的目标函数（1）式中，分析得出在 KL 约束条件下，最大化奖励的**最优策略形状**（对每个固定的 $x$）：
+
 $$
 \pi_\tau(y\mid x)
 =\frac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,
 \exp\!\Big(\tfrac{1}{\beta} \, r(x,y)\Big),
 \tag{2}
 $$
+
 其中 $Z(x)=\sum_y \pi_{\text{ref}}(y\mid x)\exp(\tfrac{1}{\beta}r(x,y))$ 是配分函数(partition function)， 该项只随 $x$ 变，不随 $y$ 变，是归一化函数。为了让乘法变成加法，使得容易做**差分**消去配分函数同时更加稳定，两边取对数并移项，得到：
+
 $$
 r(x,y) = \beta \log \frac{\pi_\tau(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x).
 \tag{3}
@@ -172,28 +186,35 @@ $$
 p^*(y_1 \succ y_2 \mid x) \;=\; \sigma\!\big(r^*(x,y_1) - r^*(x,y_2)\big).
 \tag{4}
 $$
+
 把 (3) 代入到“奖励差”里（$r^*$ 用最优策略 $\pi^*$ 的表达），$\beta\log Z(x)$ 在做差时**抵消**，得到（由此可知配分函数被消除后对梯度也没有影响）：
+
 $$
-p^*(y_1 \succ y_2 \mid x)
-= \sigma\!\Big(
+p^*(y_1 \succ y_2 \mid x) = \sigma\!\Big(
 \beta \log \frac{\pi^*(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}
 -\beta \log \frac{\pi^*(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}
 \Big).
 \tag{5}
 $$
+
 把 $\sigma(z)=1/(1+e^{-z})$ 展开，就得到原文等价写法：
+
 $$
 p^*(y_1 \succ y_2 \mid x)=
 \frac{1}{1+\exp\!\Big(\beta \log \frac{\pi^*(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}
 -\beta \log \frac{\pi^*(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\Big)}.
 \tag{6}
 $$
+
 用 $\pi_\theta$ 近似 $\pi^*$，提取$\beta$，再对每个偏好对 $(x,y_w,y_l)$ 的“标签=1（$y_w$ 赢）”做伯努利极大似然：
+
 $$
 \max_\theta\;\;\log\sigma\!\Big(\beta\big[\underbrace{\log\tfrac{\pi_\theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)}
 -\log\tfrac{\pi_\theta(y_l|x)}{\pi_{\text{ref}}(y_l|x)}}_{\text{边际}}\big]\Big).
 $$
+
 取负号，变为求min的最小值，就是训练时用的 **DPO 损失**：
+
 $$
 \mathcal L_{\text{DPO}}(\theta;\pi_{\text{ref}})
 = -\,
@@ -202,6 +223,7 @@ $$
 -\underbrace{\log \pi_{\text{ref}}(y_w\mid x)+\log \pi_{\text{ref}}(y_l\mid x)}_{\text{参考校正}}\big)
 \Big)\Big].
 $$
+
 Again，**$\beta$ 大：更贴近参考；小：更敢改变，远离参考**。总结，DPO的梯度更新旨在**增加**优质回答的概率，同时**减少**劣质回答的概率。
 
 #### 3.3.4 和SFT/RLHF的差异
@@ -245,9 +267,11 @@ return F.softplus(-beta * delta).mean()
 ```
 
 这里使用了[softplus](https://docs.pytorch.org/docs/stable/generated/torch.nn.Softplus.html)函数，因为：
+
 $$
 -\log \sigma(z) = \log(1+e^{-z}) = \text{softplus}(-z).\\
 $$
+
 这种写法在数值上比 `-torch.logsigmoid(z)` 更稳定，尤其是当 $\beta\Delta$ 取极大/极小值时，能避免溢出。然后，训练时我们通常一个 batch 有多条样本：$\mathcal L = \frac{1}{N} \sum_{i=1}^N -\log \sigma(\beta \Delta_i).$ 所以 `mean()` 就是做 **batch 平均**。如果不取 mean， 会只返回一个向量，梯度就会按样本数放大，训练不稳定。
 
 接下来我们来walkthrough训练过程，这轮训练的输入与目标：
@@ -486,12 +510,14 @@ prompt | chosen | rejected
 **要点**：把对齐视为**学习排序（Learning-to-Rank）\**问题，不再把 K 个候选拆成成对比较，而是\**直接利用整组排序**做监督。给定同一提示 $x$ 的 K 个候选 $\{y_1,\dots,y_K\}$ 及其排序（或打分），令策略 $\pi_\theta$ 产出序列对数似然，按 LTR 的 **listwise** 目标优化策略参数 $\theta$（本质是“监督式偏好优化”，非 RL）。
 
 **偏好建模**：LiPO 在统一框架下给出 pointwise / pairwise / listwise 多种目标，其中**listwise** 直接最大化“给定排序的概率”，可用 ListMLE / softmax / Lambda-loss 等实现。一个常见的 **ListMLE** 写法（对单个 $(x,\{y\},\text{perm})$）是：
+
 $$
 \mathcal{L}_{\text{ListMLE}}(\theta)
 = -\sum_{t=1}^{K}\Big[
 s_\theta(x,y_{(t)}) - \log\sum_{j=t}^{K} \exp\big(s_\theta(x,y_{(j)})\big)
 \Big],
 $$
+
 其中 $y_{(t)}$ 表示第 $t$ 名候选，$s_\theta$ 可取序列的归一化 log-prob 或把策略-打分与 RM/评分结合的可微分数。LiPO 论文实作中同时比较了 **pair-logistic、pair-hinge、list-MLE、lambda-loss** 等多种损失，并报告 listwise 类目标在**真实 rankwise 数据**上对 DPO 等基线有增益（如 LiPO-$\lambda$）。
 
 
@@ -510,7 +536,6 @@ $$
 
 [6] Liu, T., Qin, Z., Wu, J., Shen, J., Khalman, M., Joshi, R., Zhao, Y., Saleh, M., Baumgartner, S., Liu, J., Liu, P.J., & Wang, X. (2024). LiPO: Listwise Preference Optimization through Learning-to-Rank. *ArXiv, abs/2402.01878*.
 
-[7] 
 
 ## Appendix
 
@@ -529,30 +554,38 @@ $$
 2. **BT 模型设定**
 
 给每个选手一个“强度/偏好参数” $w_i$。A 胜过 B 的概率建模为：
+
 $$
 \Pr(A \succ B) \;=\; \sigma(w_A - w_B) \;=\; \frac{1}{1+e^{-(w_A-w_B)}}
 $$
+
 同理对其它组合。注意：**只识别强度差** $w_i-w_j$，所以整体加常数不变（我们甚至可把一个人的强度设为 0 作基准）。
 
 **由数据“反推”强度差**
 
 把**观测胜率当作真概率**的近似，就有（用对数最大似然估计 logit($p$)=$\ln\frac{p}{1-p}$）：
+
 $$
 \begin{aligned}
 w_A - w_B &\approx \text{logit}(0.7) = \ln\!\frac{0.7}{0.3} = \ln\!\frac{7}{3} \approx 0.8473 \\
 w_A - w_C &\approx \text{logit}(0.6) = \ln\!\frac{0.6}{0.4} = \ln(1.5) \approx 0.4055
 \end{aligned}
 $$
+
 设定基准 $w_A=0$，则
+
 $$
 w_B \approx -0.8473,\qquad w_C \approx -0.4055.
 $$
+
 **用这个强度去“预测”另一对**
 
 现在预测 **B 对 C** 的胜率（顺便检查一致性）：
+
 $$
 \Pr(B \succ C)=\sigma(w_B - w_C)=\sigma(-0.8473 - (-0.4055))=\sigma(-0.4418).
 $$
+
 计算 $\sigma(-0.4418)=\frac{1}{1+e^{0.4418}}\approx \frac{1}{1+1.556}\approx 0.391$。
 
 也就是 **B 胜 C 约 39.1%**，等价地 **C 胜 B 约 60.9%**，和我们观测的 0.6 很接近。

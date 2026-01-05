@@ -12,12 +12,12 @@
 
 ### 1. 结果导向奖励（Outcome-based Reward, sparse reward）
 
-**定义：** 结果导向奖励只根据推理的最终输出结果给予反馈信号，而不关心中间推理过程的细节。例如，在数学题求解中，仅当最终答案正确时给予正奖励，否则不给奖励（或给负奖励）。这类奖励通常是**稀疏**且**终局式**的：整个推理链只有在终点得到一个总体评价[2] [arxiv.org](https://arxiv.org/html/2502.06781v1#:~:text=However%2C fundamental challenges of sparse,to estimate the advantages or)。
+**定义：** 结果导向奖励只根据推理的最终输出结果给予反馈信号，而不关心中间推理过程的细节。例如，在数学题求解中，仅当最终答案正确时给予正奖励，否则不给奖励（或给负奖励）。这类奖励通常是**稀疏**且**终局式**的：整个推理链只有在终点得到一个总体评价[2] 。
 
 **代表工作：** 很多当前的LLM-RL方法多采用结果监督训练模型（GRPO，DAPO等），尤其在分配优势函数上。一些早期的工作也采用或者比较了该方法的问题，例如，
 
-- DeepMind-SORMs（2022）比较了只基于最终答案正确性的**Outcome监督**与逐步反馈的**Process监督**效果，发现单纯Outcome奖励虽然标注成本低，但对模型纠正中间错误的帮助有限[emergentmind.com](https://www.emergentmind.com/topics/stepwise-outcome-based-reward-models-sorms#:~:text=SORMs are motivated by observed,generated rollouts as supervision)。
-- OpenAI在“Let’s Verify Step by Step”（2023）中也作为对照训练了Outcome型奖励模型，结果该模型只解决了约50%的MATH基准题，而结合过程监督的模型可解78%，明显胜出[arxiv.org](https://arxiv.org/abs/2305.20050#:~:text=methods,train our best reward model)。
+- DeepMind-SORMs（2022）比较了只基于最终答案正确性的**Outcome监督**与逐步反馈的**Process监督**效果，发现单纯Outcome奖励虽然标注成本低，但对模型纠正中间错误的帮助有限。
+- OpenAI在“Let’s Verify Step by Step”（2023）中也作为对照训练了Outcome型奖励模型，结果该模型只解决了约50%的MATH基准题，而结合过程监督的模型可解78%，明显胜出。
 
 为提升纯Outcome奖励的效率，后续研究提出了一些改进策略。例如，
 
@@ -25,42 +25,42 @@
 
   - **正向采样学习**：通过best-of-N（BoN）采样获取高质量解答进行行为克隆；BoN采样通过对正支持度的穷举搜索，在固定KL约束下实现最优胜率；
 
-  - **负向采样学习**：BoN 选“最好”的一条，会系统性低估负样本的梯度贡献（例如 Best-of-4 时，负样本被选中的概率远小于原策略下的真实发生概率，因为二元奖励里，只要采样池里**有任意一条正样（答案对）**，BoN 一定选正样），导致用原始 0/1 奖励做策略梯度会不一致；基于此，OREAL对失败样本设计了额外的奖励重整，先对每题跑多条样本以估通过率，再按通过率对负样本打“放大过的负奖励”。这样缓解了稀疏二元奖励带来的训练困难[arxiv.org](https://arxiv.org/html/2502.06781v1#:~:text=framework%2C termed OREAL%2C to pursue,long chain of thought for)。
+  - **负向采样学习**：BoN 选“最好”的一条，会系统性低估负样本的梯度贡献（例如 Best-of-4 时，负样本被选中的概率远小于原策略下的真实发生概率，因为二元奖励里，只要采样池里**有任意一条正样（答案对）**，BoN 一定选正样），导致用原始 0/1 奖励做策略梯度会不一致；基于此，OREAL对失败样本设计了额外的奖励重整，先对每题跑多条样本以估通过率，再按通过率对负样本打“放大过的负奖励”。这样缓解了稀疏二元奖励带来的训练困难。
 
-  - OREAL还训练了一个基于Outcome信号的**逐字奖励模型**，将最终二元反馈分解为对推理链中各Token的重要性估计，从而实现更细粒度的梯度信号[arxiv.org](https://arxiv.org/html/2502.06781v1#:~:text=correctness in long reasoning chains%2C,policy optimization requirements for mathematical)。具体来说，它是学一个 **token-level reward function w(sₜ)**，使得 **(1/T)∑ₜ w(sₜ) ≈ r(s)**（该序列的真实奖励）； 训练的loss函数是，对verifier得到的二元奖励r(s)和对基于w(s_t) (s = sum(s_t))的对序列s的正确性预测的交叉熵：
+  - OREAL还训练了一个基于Outcome信号的**逐字奖励模型**，将最终二元反馈分解为对推理链中各Token的重要性估计，从而实现更细粒度的梯度信号。具体来说，它是学一个 **token-level reward function w(sₜ)**，使得 **(1/T)∑ₜ w(sₜ) ≈ r(s)**（该序列的真实奖励）； 训练的loss函数是，对verifier得到的二元奖励r(s)和对基于w(s_t) (s = sum(s_t))的对序列s的正确性预测的交叉熵：
     $$
     \mathcal{L}_{CE}=-\mathbb{E}_{(s,r)}[r\log p(s)+(1-r)\log(1-p(s))]
     $$
 
   - 这让我们能**给关键 token 更大权重**，把梯度聚焦到“真正决定成败的那几步”。
 
-**典型公式：** 在结果导向设置下，可将最终正确视为目标事件。例如，对于问题$Q$和模型输出$Y$，定义奖励$R=\mathbf{1}{Y \text{正确}}$（正确为1，错误为0）。策略优化往往采用强化学习中的REINFORCE或PPO，目标是最大化$\mathbb{E}[R]$。由于$R$稀疏，实践中常结合**奖励塑形**（reward shaping）技巧，如将通过函数$F(Y)$转换的得分作为奖励，或者使用类似胜率提升的探索方法。例如，一种称为“Outcome-Based Exploration (OBE)”的方法通过在训练中动态调整探索/利用平衡，鼓励模型尝试更多可能得到正确答案的路径[github.com](https://github.com/TsinghuaC3I/Awesome-RL-for-LRMs#:~:text=2025,Learning Problems Image%3A Paper)。
+**典型公式：** 在结果导向设置下，可将最终正确视为目标事件。例如，对于问题$Q$和模型输出$Y$，定义奖励$R=\mathbf{1}{Y \text{正确}}$（正确为1，错误为0）。策略优化往往采用强化学习中的REINFORCE或PPO，目标是最大化$\mathbb{E}[R]$。由于$R$稀疏，实践中常结合**奖励塑形**（reward shaping）技巧，如将通过函数$F(Y)$转换的得分作为奖励，或者使用类似胜率提升的探索方法。例如，一种称为“Outcome-Based Exploration (OBE)”的方法通过在训练中动态调整探索/利用平衡，鼓励模型尝试更多可能得到正确答案的路径。
 
 **优缺点：** 
 
-- Outcome奖励的**优点**是标签获取容易（只需判断最终回答对错），且与任务目标直接相关[emergentmind.com](https://www.emergentmind.com/topics/stepwise-outcome-based-reward-models-sorms#:~:text=SORMs are motivated by observed,generated rollouts as supervision)。它在结果客观明确的任务（如编程过测试、数学计算）中非常自然.
-- 但**缺点**也很突出：由于只有终局反馈，模型难以定位是哪一步出错，导致**信用分配**不明确，训练信号极度稀疏，这往往导致学习效率低下、收敛缓慢[emergentmind.com](https://www.emergentmind.com/topics/stepwise-outcome-based-reward-models-sorms#:~:text=limitations of traditional outcome reward,reasoning%2C generation%2C and alignment tasks)[arxiv.org](https://arxiv.org/html/2502.06781v1#:~:text=steps is labor intensive ,31)。尤其在长链推理中，一个错误步骤就可能令最终答案错误，而Outcome奖励直到序列结束才给信号，模型很难根据如此稀疏的信号学会避免中途错误。
+- Outcome奖励的**优点**是标签获取容易（只需判断最终回答对错），且与任务目标直接相关。它在结果客观明确的任务（如编程过测试、数学计算）中非常自然.
+- 但**缺点**也很突出：由于只有终局反馈，模型难以定位是哪一步出错，导致**信用分配**不明确，训练信号极度稀疏，这往往导致学习效率低下、收敛缓慢。尤其在长链推理中，一个错误步骤就可能令最终答案错误，而Outcome奖励直到序列结束才给信号，模型很难根据如此稀疏的信号学会避免中途错误。
 
 <br>
 
 ### 2. 步骤级奖励（Step-based Reward， 属于Process Reward/dense rewards）
 
-**定义：** 步骤级奖励会对推理链中的每个中间步骤进行评估，为每一步提供细粒度的反馈信号[emergentmind.com](https://www.emergentmind.com/topics/process-reward-models#:~:text=,modern LLM and multimodal systems)。也就是说，模型在推理过程中的每一步操作（例如中间算式、推理语句）都会得到一个奖励值，指示该步是否正确、有用或符合逻辑[emergentmind.com](https://www.emergentmind.com/topics/process-reward-models#:~:text=A process reward model ,wider implications of process reward)。理想情况下，每个正确的中间推理步骤都获得正奖励，错误步骤获得负奖励，从而引导模型**逐步**走向正确解答。
+**定义：** 步骤级奖励会对推理链中的每个中间步骤进行评估，为每一步提供细粒度的反馈信号。也就是说，模型在推理过程中的每一步操作（例如中间算式、推理语句）都会得到一个奖励值，指示该步是否正确、有用或符合逻辑。理想情况下，每个正确的中间推理步骤都获得正奖励，错误步骤获得负奖励，从而引导模型**逐步**走向正确解答。
 
 **代表工作：** 例如
 
-- OpenAI的“Let’s Verify Step by Step” (Lightman et al., 2023) 是步骤级奖励的里程碑工作之一。研究者构建了包含80万个人类标注步级反馈的数据集**PRM800K**[arxiv.org](https://arxiv.org/abs/2305.20050#:~:text=significantly outperforms outcome supervision for,train our best reward model)，用于训练一个“过程奖励模型”（Process Reward Model, PRM）去评估数学题解答过程中的每个步骤是否正确[arxiv.org](https://arxiv.org/abs/2305.20050#:~:text=we can turn either to,Additionally)。他们发现，与只看最终答案的奖励模型相比，PRM能显著提高模型推理的可靠性：结合PRM的策略在MATH测试集上解题成功率远超仅Outcome监督的策略[arxiv.org](https://arxiv.org/abs/2305.20050#:~:text=methods,train our best reward model)。
+- OpenAI的“Let’s Verify Step by Step” (Lightman et al., 2023) 是步骤级奖励的里程碑工作之一。研究者构建了包含80万个人类标注步级反馈的数据集**PRM800K**，用于训练一个“过程奖励模型”（Process Reward Model, PRM）去评估数学题解答过程中的每个步骤是否正确。他们发现，与只看最终答案的奖励模型相比，PRM能显著提高模型推理的可靠性：结合PRM的策略在MATH测试集上解题成功率远超仅Outcome监督的策略。
 - 另一项工作来自deepmind-**Solving Math Word Problems with Process- and Outcome-based Feedback**则更早比较了过程反馈与结果反馈，指出过程监督可以定位并纠正推理链中的局部错误，训练稳定性更好，而结果监督往往无法发现模型思路中的细小谬误。
-- DeepMind在2024年的**Math-Shepherd**项目中，探索了无需人工标注、自动生成步骤反馈的方法[github.com](https://github.com/TsinghuaC3I/Awesome-RL-for-LRMs#:~:text=2023,based feedback Image%3A Paper)。Math-Shepherd利用模型自我校验，判定自己的某步推理是否可靠，实现了**无人工参与**的步骤级强化训练。总体而言，步骤级奖励通过更**密集的反馈**克服了稀疏奖励难题，被证明可以提升模型在数学、代码等多步骤推理任务上的表现。
+- DeepMind在2024年的**Math-Shepherd**项目中，探索了无需人工标注、自动生成步骤反馈的方法。Math-Shepherd利用模型自我校验，判定自己的某步推理是否可靠，实现了**无人工参与**的步骤级强化训练。总体而言，步骤级奖励通过更**密集的反馈**克服了稀疏奖励难题，被证明可以提升模型在数学、代码等多步骤推理任务上的表现。
 
 **实现细节：** 步骤级奖励通常需要一个**裁判模型**或规则来判定每步正误。
 
 - 如果有标准解题步骤，则可直接比对模型步骤与标准解答是否一致；
-- 但更多情况下需要训练一个PRM（例如分类模型）判断“给定问题和当前部分解答，这一步是否合法/正确”[emergentmind.com](https://www.emergentmind.com/topics/process-reward-models#:~:text=Process reward modeling originally emerged,is correctly executed)。
+- 但更多情况下需要训练一个PRM（例如分类模型）判断“给定问题和当前部分解答，这一步是否合法/正确”。
 
-常用的训练目标是最大化每个正确步骤被判为“正确”的概率，同时最小化错误步骤被误判的概率，可通过对每步进行二元交叉熵损失来训练PRM[emergentmind.com](https://www.emergentmind.com/topics/process-reward-models#:~:text=Process reward modeling originally emerged,is correctly executed)。更先进的方法引入了**排序损失**来强调正确步骤的评分应高于错误步骤一定幅度。例如
+常用的训练目标是最大化每个正确步骤被判为“正确”的概率，同时最小化错误步骤被误判的概率，可通过对每步进行二元交叉熵损失来训练PRM。更先进的方法引入了**排序损失**来强调正确步骤的评分应高于错误步骤一定幅度。例如
 
-- PQM[[5]](https://arxiv.org/pdf/2410.11287)模型将每步赋予一个$Q$值（表示从当前步继续推理最终正确的概率估计），并用**排序约束损失**确保真正正确的步骤Q值恒大于错误步骤[emergentmind.com](https://www.emergentmind.com/topics/process-reward-models#:~:text=evaluate each step in isolation%2C,encode relational information among steps)。这种比较损失比逐步独立判断更有效地利用了序列信息，强化了PRM对整链的把控。
+- PQM[5]模型将每步赋予一个$Q$值（表示从当前步继续推理最终正确的概率估计），并用**排序约束损失**确保真正正确的步骤Q值恒大于错误步骤。这种比较损失比逐步独立判断更有效地利用了序列信息，强化了PRM对整链的把控。
 
 **应用场景：** 步骤级奖励已广泛应用于数学推理、代码合成等需长链思考的场景。例如数学推理上，可以使用
 
@@ -73,7 +73,7 @@
 
 **优缺点：** 
 
-- 步骤级奖励的**主要优点**是反馈密度高，大幅改善了信用分配问题，使训练更加稳定高效[emergentmind.com](https://www.emergentmind.com/topics/stepwise-outcome-based-reward-models-sorms#:~:text=limitations of traditional outcome reward,reasoning%2C generation%2C and alignment tasks)。模型能够“知错就改”，逐步优化自己的思维链。此外细粒度监督也提升了模型推理的**可解释性**，因为我们可以检查每步评分了解模型哪里出错[emergentmind.com](https://www.emergentmind.com/topics/stepwise-outcome-based-reward-models-sorms#:~:text=,trace correctness%2C and model alignment)。
+- 步骤级奖励的**主要优点**是反馈密度高，大幅改善了信用分配问题，使训练更加稳定高效。模型能够“知错就改”，逐步优化自己的思维链。此外细粒度监督也提升了模型推理的**可解释性**，因为我们可以检查每步评分了解模型哪里出错。
 - 它的**缺点**在于对数据和模型提出更高要求：
   - 需要大量逐步标注（获取成本高）或可靠的自动Verifier；
   - 另外PRM模型本身可能存在**泛化**问题，在新题型或开放领域下未必知道如何判定步骤对错。
@@ -84,18 +84,18 @@
 
 ### 3. 偏好导向奖励（Preference-based Reward，Both）
 
-**定义：** 偏好导向奖励（PBR）是利用人类或AI对输出结果的**主观偏好**来塑造模型行为的一种范式。在这种设置下，奖励不直接来源于任务是否客观正确，而是来源于对多个可能输出的相对偏好比较[openreview.net](https://openreview.net/forum?id=09Nj40ScvC#:~:text=rely on heuristic search strategies,we enhance Group Relative Policy)。典型做法是让人工（或辅助模型）对模型输出的质量、合理性、风格等打分或排序，然后训练一个**奖励模型**去拟合这些偏好。训练好的奖励模型就可以对新输出打分作为强化学习的奖励信号。
+**定义：** 偏好导向奖励（PBR）是利用人类或AI对输出结果的**主观偏好**来塑造模型行为的一种范式。在这种设置下，奖励不直接来源于任务是否客观正确，而是来源于对多个可能输出的相对偏好比较。典型做法是让人工（或辅助模型）对模型输出的质量、合理性、风格等打分或排序，然后训练一个**奖励模型**去拟合这些偏好。训练好的奖励模型就可以对新输出打分作为强化学习的奖励信号。
 
-**代表工作：** OpenAI的**RLHF（基于人类反馈的强化学习）**是**偏好结果导向奖励**（Outcome-level Preference）的典型代表[rlhfbook.com](https://rlhfbook.com/c/07-reward-models#:~:text=Architecture)。例如在InstructGPT中，研究者让人类标注者比较模型不同回答的优劣，构建偏好数据，然后训练一个奖励模型$r_\theta(x,y)$，使其对人类偏好的回答打出更高的分数[rlhfbook.com](https://rlhfbook.com/c/07-reward-models#:~:text=Then%2C by maximizing the log,to train a reward model)。具体训练使用Bradley-Terry模型的对数概率损失，即最大化$\sigma(r_\theta(y_c)-r_\theta(y_r))$，其中$y_c$和$y_r$分别是被偏好和被淘汰的回答 \theta^,theta(y_c)[rlhfbook.com](https://rlhfbook.com/c/07-reward-models#:~:text=The first form%2C as in,4)。损失函数可写为：
+**代表工作：** OpenAI的**RLHF（基于人类反馈的强化学习）**是**偏好结果导向奖励**（Outcome-level Preference）的典型代表。例如在InstructGPT中，研究者让人类标注者比较模型不同回答的优劣，构建偏好数据，然后训练一个奖励模型$r_\theta(x,y)$，使其对人类偏好的回答打出更高的分数。具体训练使用Bradley-Terry模型的对数概率损失，即最大化$\sigma(r_\theta(y_c)-r_\theta(y_r))$，其中$y_c$和$y_r$分别是被偏好和被淘汰的回答 \theta^,theta(y_c)。损失函数可写为：
 $$
 \mathcal{L}_{\text{RM}}(\theta) = -\log \sigma\!\Big(r_\theta(y_c|x) - r_\theta(y_r|x)\Big),
 $$
-通过最小化该损失来调整$\theta$。训练一段时间后，$r_\theta$就能近似模拟人类的偏好判断[rlhfbook.com](https://rlhfbook.com/c/07-reward-models#:~:text=Architecture)。这样的奖励模型结合PPO算法对预训练LLM进行微调，成功对齐了GPT-3模型的回答与人类偏好（如更礼貌、有用、无毒）[rlhfbook.com](https://rlhfbook.com/c/07-reward-models#:~:text=Architecture)。
+通过最小化该损失来调整$\theta$。训练一段时间后，$r_\theta$就能近似模拟人类的偏好判断。这样的奖励模型结合PPO算法对预训练LLM进行微调，成功对齐了GPT-3模型的回答与人类偏好（如更礼貌、有用、无毒）。
 
 在推理任务中，偏好模型也发挥了作用，尤其是偏好过程（Process-level Preference）。例如
 
 - **Constitutional AI**让模型根据一系列原则自己评判输出，从而替代人工偏好；
-- 又如近期有工作引入**步骤级偏好**，让人工对比两条推理链中哪个更合逻辑，然后训练**偏好版PRM**对步骤质量打分[openreview.net](https://openreview.net/forum?id=09Nj40ScvC#:~:text=Abstract%3A Process reward models ,based learning)[openreview.net](https://openreview.net/forum?id=09Nj40ScvC#:~:text=reinforcement learning framework guided by,Experimental results on ProcessBench and)。上述ICLR 2026提交的研究利用MCTS生成多种解题链，由偏好比较构建高质量步骤数据，训练了**PPRM（偏好过程奖励模型）**，并在强化学习中取得比传统PRM更稳健的效果。他们采用了Bradley-Terry偏好损失来训练PPRM，使其更好地适应带偏好噪声的数据，并结合改进的GRPO算法稳定地优化策略模型.
+- 又如近期有工作引入**步骤级偏好**，让人工对比两条推理链中哪个更合逻辑，然后训练**偏好版PRM**对步骤质量打分。上述ICLR 2026提交的研究利用MCTS生成多种解题链，由偏好比较构建高质量步骤数据，训练了**PPRM（偏好过程奖励模型）**，并在强化学习中取得比传统PRM更稳健的效果。他们采用了Bradley-Terry偏好损失来训练PPRM，使其更好地适应带偏好噪声的数据，并结合改进的GRPO算法稳定地优化策略模型.
 
 **典型应用：** 偏好导向奖励特别适用于**缺乏客观评价标准**的开放性任务。例如**创意写作**、**对话助理**等场景，没有唯一正确答案，但可以通过人类偏好引导模型输出更符合人意。在推理任务中，偏好信号可用来鼓励模型输出**思维过程清晰**、**解释完善**的解答，而不只是给出一个裸答案。例如可以让人类对比“仅给答案”和“给出步骤+答案”两种回答，更偏好后者，则模型会受到奖励驱动去呈现完整推理过程。偏好奖励还能**配合规则**：如结合**AI审阅者**，利用大模型判定哪个推理更合理，将其偏好作为近似奖励（即所谓RLAIF，基于AI偏好的RL）。
 
@@ -112,13 +112,13 @@ $$
 
 ### 4. 验证器型奖励（Verifier-based Reward， Both）
 
-**定义：** 验证器型奖励利用一个外部的**验证机制**来评估模型输出或中间步骤的正确性，从而产生奖励信号。这里的验证器可以是独立训练的模型（如判别器、奖励模型），也可以是程序化的判定（如单元测试、数学公式检验）。关键在于，引入了一个**与生成模型相分离**的裁判，对LLM的解答进行判分打分[emergentmind.com](https://www.emergentmind.com/topics/process-reward-models#:~:text=A process reward model ,wider implications of process reward)[emergentmind.com](https://www.emergentmind.com/topics/process-reward-models#:~:text=models in contemporary AI systems)。验证器型奖励常用于那些有明确**可验证准则**的任务，如数学、代码、事实问答等。
+**定义：** 验证器型奖励利用一个外部的**验证机制**来评估模型输出或中间步骤的正确性，从而产生奖励信号。这里的验证器可以是独立训练的模型（如判别器、奖励模型），也可以是程序化的判定（如单元测试、数学公式检验）。关键在于，引入了一个**与生成模型相分离**的裁判，对LLM的解答进行判分打分。验证器型奖励常用于那些有明确**可验证准则**的任务，如数学、代码、事实问答等。
 
 **代表工作：** 这类方法的一个典型例子是OpenAI在代码生成中的实践：
 
 - 模型产生代码后，通过运行代码看是否通过测试用例来给予奖励信号。如果通过测试则奖励1，否则0——测试运行环境就充当了验证器。
 
-- 在LLM推理领域，类似地有工作使用**符号数学引擎**验证计算步骤，或用知识库检索验证事实。例如2025年的研究**Rubrics as Rewards**[[7]](https://arxiv.org/abs/2507.17746)提出为LLM设计一套自动评分规则（rubric），比如推理链是否包含某些关键步骤、最终答案单位是否正确等，令模型按此评分优化。其核心思路：
+- 在LLM推理领域，类似地有工作使用**符号数学引擎**验证计算步骤，或用知识库检索验证事实。例如2025年的研究**Rubrics as Rewards**[7]提出为LLM设计一套自动评分规则（rubric），比如推理链是否包含某些关键步骤、最终答案单位是否正确等，令模型按此评分优化。其核心思路：
 
   - 痛点：RLVR 在数学/代码等“可验证”领域很强，但在真实场景（医学、科学问答等）里，评价依赖多维、主客观混合的标准，难以直接给出“对/错”的奖励。RaR，一种on-policy reinforcement learning， 提出用**实例级 Rubric（清单式评分标准）直接当奖励**，把 RL 扩展到“不可验证”领域。
 
@@ -140,7 +140,7 @@ $$
 
   - 实际用强 LLM（如 o3-mini、GPT-4o）在**参考答案引导**下，为每个样本生成 7–20 条标准并带类别权重（Essential/Important/Optional/Pitfall）。
 
-- 此外，**LLM-As-Judge** 也是近期热门方向：即使用一个强大的语言模型（如GPT-4)来充当验证者，评判另一模型的回答。Zheng等人（2024）在ProcessBench基准上比较了开源PRM和GPT-4等大模型裁判，发现强大的Prompt式裁判在数学步骤错误识别上**明显优于**现有专门训练的PRM[marktechpost.com](https://www.marktechpost.com/2024/12/14/alibaba-qwen-researchers-introduced-processbench-a-new-ai-benchmark-for-measuring-the-ability-to-identify-process-errors-in-mathematical-reasoning/#:~:text=The evaluation results of PROCESSBENCH,step correctness based on final)。这揭示了当前PRM的局限：很多PRM是基于最终答案概率来推断步骤正误，若模型通过错误推理巧合得出正确答案，PRM会被误导[marktechpost.com](https://www.marktechpost.com/2024/12/14/alibaba-qwen-researchers-introduced-processbench-a-new-ai-benchmark-for-measuring-the-ability-to-identify-process-errors-in-mathematical-reasoning/#:~:text=decline was observed across all,strategies to accurately assess the)。相反，GPT-4这类通识模型可以综合语义和常识对过程进行更全面的评估。因此，也有工作尝试**联合训练生成器和验证器**：一方面优化生成模型提高解题率，另一方面优化验证模型提高判错率，两者相互协作增强推理效果。
+- 此外，**LLM-As-Judge** 也是近期热门方向：即使用一个强大的语言模型（如GPT-4)来充当验证者，评判另一模型的回答。Zheng等人（2024）在ProcessBench基准上比较了开源PRM和GPT-4等大模型裁判，发现强大的Prompt式裁判在数学步骤错误识别上**明显优于**现有专门训练的PRM。这揭示了当前PRM的局限：很多PRM是基于最终答案概率来推断步骤正误，若模型通过错误推理巧合得出正确答案，PRM会被误导。相反，GPT-4这类通识模型可以综合语义和常识对过程进行更全面的评估。因此，也有工作尝试**联合训练生成器和验证器**：一方面优化生成模型提高解题率，另一方面优化验证模型提高判错率，两者相互协作增强推理效果。
 
   注：最近有不少论文也专门指出 LLM-as-Judge 的局限：
 
@@ -158,7 +158,7 @@ $$
 
 **优缺点：** 
 
-- 验证器型奖励的**优势**是当验证标准可靠时，奖励非常准确且可扩展。例如代码测试、人算校验几乎不会误判，还能自动大规模应用[huggingface.co](https://huggingface.co/papers/2412.06559#:~:text=Reasoning huggingface,erroneous steps in mathematical reasoning)。这种方法将“判断正确”这一任务外包给了专门机制，释放了生成模型的负担，从而往往得到更稳定的训练信号。
+- 验证器型奖励的**优势**是当验证标准可靠时，奖励非常准确且可扩展。例如代码测试、人算校验几乎不会误判，还能自动大规模应用。这种方法将“判断正确”这一任务外包给了专门机制，释放了生成模型的负担，从而往往得到更稳定的训练信号。
 - **缺点**在于：若验证器本身不可靠，会影响训练效果。例如用另一个模型当裁判，可能引入偏见或错误判断，甚至出现模型学会“投机取巧”迎合验证器（Reward Gaming）。同时，训练一个高质量验证器本身也需要数据和成本。近期研究显示，单一验证器可能有盲区，因此出现了**多裁判融合**的思路：比如结合符号验证+统计模型验证，或多个风格不同的验证模型投票，以提高评估稳健性。
 
 **应用场景：** 凡是存在**客观可检查**标准的推理任务，Verifier奖励都非常适用。例如数学证明中可借助定理验证器检查推导合法性，逻辑推理题可借助逻辑约简器验证结论，问答可利用检索验证答案出处等。在知识型问答里，也有工作用搜索引擎验证模型回答的事实准确性，将检索结果与回答比对作为奖励信号，鼓励模型产出可验证的答案。
@@ -241,19 +241,19 @@ $$
 
 OpenAI在2023年发布的**PRM800K**数据集是过程监督领域的重要里程碑 [2]。PRM800K（Process Reward Model 800K）包含了约80万个人类标注的数学题**逐步解题过程**及每个步骤的正误判断标签。这些数据主要源自MATH数学竞赛题：人工为每道题撰写了详细的解题链，并在每步注明该步是否正确、合乎逻辑。这为训练PRM提供了大规模高质量的监督信号。
 
-**动机：** 在此之前，缺乏大规模的过程监督数据是训练PRM的瓶颈之一。OpenAI团队认识到，仅用Outcome监督，模型在数学等复杂推理中仍频繁犯逻辑错误。而人类擅长逐步检查推理链，因此构建一个大规模逐步反馈数据集有望让模型也学会“像人类一样”审阅推理过程[emergentmind.com](https://www.emergentmind.com/topics/process-reward-models#:~:text=A process reward model ,wider implications of process reward)。PRM800K的发布正是为了解决“需要高质量过程级奖励信号”这一难题，为研究者提供了宝贵资源。
+**动机：** 在此之前，缺乏大规模的过程监督数据是训练PRM的瓶颈之一。OpenAI团队认识到，仅用Outcome监督，模型在数学等复杂推理中仍频繁犯逻辑错误。而人类擅长逐步检查推理链，因此构建一个大规模逐步反馈数据集有望让模型也学会“像人类一样”审阅推理过程。PRM800K的发布正是为了解决“需要高质量过程级奖励信号”这一难题，为研究者提供了宝贵资源。
 
-**使用方式：** 研究者利用PRM800K训练了一个奖励模型（即PRM），输入数学题、模型解题步骤序列，输出每个步骤正确的概率。训练目标是让PRM对数据集中标记为“正确”的步骤打分高，对“错误”步骤打分低，可以采用逐步的BCE损失或排序损失[emergentmind.com](https://www.emergentmind.com/topics/process-reward-models#:~:text=Process reward modeling originally emerged,is correctly executed)。最终训练出的PRM可以用在两个方面：(1) **离线评估**：作为裁判评价不同模型解题过程的好坏，提高评测精度；(2) **在线训练**：与策略模型结合进行强化学习，通过实时判定每步对错来给予策略模型反馈。OpenAI在他们的研究中，使用PRM预测的分数作为奖励，在数学题解答任务上对模型进行PPO微调，显著提升了模型的解题正确率。他们报告，在MATH测试集中，使用过程监督训练的小模型性能超过了使用结果监督的大模型，凸显PRM的价值。
+**使用方式：** 研究者利用PRM800K训练了一个奖励模型（即PRM），输入数学题、模型解题步骤序列，输出每个步骤正确的概率。训练目标是让PRM对数据集中标记为“正确”的步骤打分高，对“错误”步骤打分低，可以采用逐步的BCE损失或排序损失。最终训练出的PRM可以用在两个方面：(1) **离线评估**：作为裁判评价不同模型解题过程的好坏，提高评测精度；(2) **在线训练**：与策略模型结合进行强化学习，通过实时判定每步对错来给予策略模型反馈。OpenAI在他们的研究中，使用PRM预测的分数作为奖励，在数学题解答任务上对模型进行PPO微调，显著提升了模型的解题正确率。他们报告，在MATH测试集中，使用过程监督训练的小模型性能超过了使用结果监督的大模型，凸显PRM的价值。
 
-**影响：** PRM800K的发布引发了业界对过程监督的广泛关注，带动了后续一系列研究。一方面，不少团队基于PRM800K继续改进PRM模型的架构与训练方法（例如引入比较损失、值函数等，如PQM[5]等变体）。另一方面，它促使大家思考如何降低对人工标注的依赖，因此催生了**隐式PRM**等新思路（详见下节）。此外，PRM800K也被用来构建**ProcessBench **[15]等评测基准的一部分[marktechpost.com](https://www.marktechpost.com/2024/12/14/alibaba-qwen-researchers-introduced-processbench-a-new-ai-benchmark-for-measuring-the-ability-to-identify-process-errors-in-mathematical-reasoning/#:~:text=domains,to evaluate their reasoning mechanisms)。总之，PRM800K为过程监督奠定了数据基础，其规模和质量让训练高性能PRM成为可能，被视作过程奖励模型领域的“ImageNet”。
+**影响：** PRM800K的发布引发了业界对过程监督的广泛关注，带动了后续一系列研究。一方面，不少团队基于PRM800K继续改进PRM模型的架构与训练方法（例如引入比较损失、值函数等，如PQM[5]等变体）。另一方面，它促使大家思考如何降低对人工标注的依赖，因此催生了**隐式PRM**等新思路（详见下节）。此外，PRM800K也被用来构建**ProcessBench **[15]等评测基准的一部分。总之，PRM800K为过程监督奠定了数据基础，其规模和质量让训练高性能PRM成为可能，被视作过程奖励模型领域的“ImageNet”。
 
 ### 2. 新一代PRM训练方法：隐式PRM与“思考链”融合
 
 尽管有了PRM800K这样的数据集，全盘人工标注的思维链毕竟代价高昂，难以覆盖所有领域。2024年以来，研究者探索了新一代的PRM训练方法，试图**降低对显式过程标签的依赖**，或者**将PRM更紧密地融入到模型的思考过程中**。这里介绍两个代表概念：**隐式PRM**和**PRM-思考链训练**。
 
-**隐式PRM（Implicit PRM）：** 隐式PRM的核心理念是“**无过程标签，也能得到过程级奖励**”。具体来说，隐式PRM先**仅用最终结果的标签**来训练一个Outcome Reward Model (ORM)，然后**间接推导**出对过程的评价[shlab.org.cn](https://www.shlab.org.cn/news/5444049#:~:text=强化学习方法PRIME，实现模型“模仿学习”到“探索学习”范式转换 隐式过程奖励解决了PRM在大模型强化学习中怎么用，怎么训，怎么扩展的三大问题，甚至不需要训练额外的奖励模型就可以开始强化学习，易用性和可扩展性极佳。 具体的PRIME算法流 )。
+**隐式PRM（Implicit PRM）：** 隐式PRM的核心理念是“**无过程标签，也能得到过程级奖励**”。具体来说，隐式PRM先**仅用最终结果的标签**来训练一个Outcome Reward Model (ORM)，然后**间接推导**出对过程的评价。
 
-- 一种实现方式来自2024年底的工作[16] [huggingface.co](https://huggingface.co/blog/ganqu/prime#:~:text=Face huggingface,Inspired by this)：“先把PRM当作普通结果奖励模型训练，然后用它做过程评分”。例如，训练一个模型来预测“给定问题和模型最终答案，答案是否正确”（这不需要逐步标注，只需最终正确/错误标签）。训练好后，在推理过程中，这个模型可以对**部分解答**进行评估：通过计算在当前前缀下最终正确的概率，作为该步骤的一个得分。这本质上相当于把结果模型当作值函数$V(s)$或$Q(s,a)$来用[emergentmind.com](https://www.emergentmind.com/topics/stepwise-outcome-based-reward-models-sorms#:~:text=1)。具体来说，
+- 一种实现方式来自2024年底的工作[16] ：“先把PRM当作普通结果奖励模型训练，然后用它做过程评分”。例如，训练一个模型来预测“给定问题和模型最终答案，答案是否正确”（这不需要逐步标注，只需最终正确/错误标签）。训练好后，在推理过程中，这个模型可以对**部分解答**进行评估：通过计算在当前前缀下最终正确的概率，作为该步骤的一个得分。这本质上相当于把结果模型当作值函数$V(s)$或$Q(s,a)$来用。具体来说，
   - 用**隐式过程奖励（implicit PRM）**：只用**最终结果标签**就训练出一个能给**逐 token/逐步**密集奖励的模型，然后把它**在线更新**并与 RL 结合，形成 PRIME 框架。这样既有稠密信号，又不需要步骤标注。
   - 更具体地，一些隐式PRM方法利用**语言模型对数几率**：比如参考模型$\pi_{\text{ref}}$和当前模型$\pi$，定义
 
@@ -261,7 +261,7 @@ $$
 r_\phi(y) = \beta \log \frac{\pi_\phi(y)}{\pi_{\text{ref}}(y)}
 $$
 
-这原是RLHF中衡量生成质量的指标（鼓励模型概率相对于参考增加）进行比较，从而计算奖励信号。隐式PRM将这种整体序列的奖励信号“拆”到每个位置：通过前向计算，每产生一个新token就可以即时计算一个$\Delta r$（类似优势函数），衡量该token对最终reward的贡献[blog.csdn.net](https://blog.csdn.net/qq_52157933/article/details/145002612#:~:text=是一种无需显式标注过程级奖励的数据驱动方法，通过训练基于响应级标签的结果奖励模型（Outcome Reward Model%2C ORM），间接生成过程级奖励。其核心是利用语言模型的对数似然比作为奖励信号，通过每一步的前向传播计算出精确的 Q,值（即累积奖励期望），从而实现对过程奖励的高效建模。Implicit PRM 不需要昂贵的逐步标注数据，却能提供稠密的、逐字级别的奖励信号，极大缓解了强化学习中稀疏奖励的问题，并显著提升推理和建模效率。)。如此无需人工标注逐步对错，也获得了**逐字级别**的稠密奖励[blog.csdn.net](https://blog.csdn.net/qq_52157933/article/details/145002612#:~:text=是一种无需显式标注过程级奖励的数据驱动方法，通过训练基于响应级标签的结果奖励模型（Outcome Reward Model%2C ORM），间接生成过程级奖励。其核心是利用语言模型的对数似然比作为奖励信号，通过每一步的前向传播计算出精确的 Q,值（即累积奖励期望），从而实现对过程奖励的高效建模。Implicit PRM 不需要昂贵的逐步标注数据，却能提供稠密的、逐字级别的奖励信号，极大缓解了强化学习中稀疏奖励的问题，并显著提升推理和建模效率。)。这个思路被证明在强化数学推理时非常有效[blog.csdn.net](https://blog.csdn.net/qq_52157933/article/details/145002612#:~:text=是一种无需显式标注过程级奖励的数据驱动方法，通过训练基于响应级标签的结果奖励模型（Outcome Reward Model%2C ORM），间接生成过程级奖励。其核心是利用语言模型的对数似然比作为奖励信号，通过每一步的前向传播计算出精确的 Q,值（即累积奖励期望），从而实现对过程奖励的高效建模。Implicit PRM 不需要昂贵的逐步标注数据，却能提供稠密的、逐字级别的奖励信号，极大缓解了强化学习中稀疏奖励的问题，并显著提升推理和建模效率。)：上海AI实验室的PRIME方法进一步将隐式PRM用于RL循环中，每轮生成解答并用结果验证器和隐式PRM共同打分，然后更新策略模型和PRM，成功实现了高效的在线强化训练[reddit.com](https://www.reddit.com/r/machinelearningnews/comments/1htvko0/prime_process_reinforcement_through_implicit/?tl=zh-hans#:~:text=PRIME 的实现遵循一个系统化的过程，其中策略模型和PRM 从SFT 模型初始化。该算法通过生成rollout、对其进行评分以及使用组合的结果和过程奖励来更新这两个 )[view.inews.qq.com](https://view.inews.qq.com/a/20250107A07W9T00#:~:text=1%2F10训练数据超越GPT)。值得注意的是，隐式PRM相当于**用模型自己的判断替代了人工逐步判断**，因此其质量取决于Outcome模型本身的强大程度；然而它确实提供了一种可扩展的途径，让过程监督不再100%依赖昂贵的人类标注。
+这原是RLHF中衡量生成质量的指标（鼓励模型概率相对于参考增加）进行比较，从而计算奖励信号。隐式PRM将这种整体序列的奖励信号“拆”到每个位置：通过前向计算，每产生一个新token就可以即时计算一个$\Delta r$（类似优势函数），衡量该token对最终reward的贡献。如此无需人工标注逐步对错，也获得了**逐字级别**的稠密奖励。这个思路被证明在强化数学推理时非常有效：上海AI实验室的PRIME方法进一步将隐式PRM用于RL循环中，每轮生成解答并用结果验证器和隐式PRM共同打分，然后更新策略模型和PRM，成功实现了高效的在线强化训练。值得注意的是，隐式PRM相当于**用模型自己的判断替代了人工逐步判断**，因此其质量取决于Outcome模型本身的强大程度；然而它确实提供了一种可扩展的途径，让过程监督不再100%依赖昂贵的人类标注。
 
 **PRM-思考链训练：** 这里指的是将PRM融入**思维链生成**过程的训练框架中。传统PRM是独立于主模型的，一个判别器或评分模型。而“PRM-思考链”方法试图让生成模型在**生成思维链的同时**就考虑到PRM的反馈，从而训练出本身就内置验证能力的模型。
 
@@ -293,24 +293,24 @@ $$
 
 ### 3. ProcessBench基准的构造与用途
 
-随着各种过程监督方法涌现，如何系统评估模型的**过程可靠性**成为新的需求。**ProcessBench**就是在此背景下提出的评测基准。它由阿里巴巴Qwen团队构建，旨在测量模型**定位推理过程错误**的能力[huggingface.co](https://huggingface.co/papers/2412.06559#:~:text=Reasoning huggingface,erroneous steps in mathematical reasoning)[marktechpost.com](https://www.marktechpost.com/2024/12/14/alibaba-qwen-researchers-introduced-processbench-a-new-ai-benchmark-for-measuring-the-ability-to-identify-process-errors-in-mathematical-reasoning/#:~:text=Qwen Team and Alibaba Inc,3%2C400 test cases%2C each meticulously)。
+随着各种过程监督方法涌现，如何系统评估模型的**过程可靠性**成为新的需求。**ProcessBench**就是在此背景下提出的评测基准。它由阿里巴巴Qwen团队构建，旨在测量模型**定位推理过程错误**的能力。
 
-**构造：** ProcessBench专注数学领域，汇集了3,400道中小学到奥赛难度的数学题[marktechpost.com](https://www.marktechpost.com/2024/12/14/alibaba-qwen-researchers-introduced-processbench-a-new-ai-benchmark-for-measuring-the-ability-to-identify-process-errors-in-mathematical-reasoning/#:~:text=assessing reasoning error detection capabilities)。每道题提供若干由模型自动生成的**完整解题过程**（包含多步推理），并由**多位专家人工标注**出其中**第一个出现错误的步骤**（如果该解答有错误的话）[arxiv.org](https://arxiv.org/pdf/2412.06559#:~:text=,We prioritize several principles when)[arxiv.org](https://arxiv.org/pdf/2412.06559#:~:text=• Problem difficulty and solution,large scale and expert annotation)。如果整条推理无误则标注“无错误”。这样的标注方式意味着ProcessBench要求模型输出一个整数（错误步编号或-1表示无错）。相比传统只判断对错的评测，ProcessBench提供了更细粒度的监督信号，可用于衡量模型发现自身谬误的本领。
+**构造：** ProcessBench专注数学领域，汇集了3,400道中小学到奥赛难度的数学题。每道题提供若干由模型自动生成的**完整解题过程**（包含多步推理），并由**多位专家人工标注**出其中**第一个出现错误的步骤**（如果该解答有错误的话）。如果整条推理无误则标注“无错误”。这样的标注方式意味着ProcessBench要求模型输出一个整数（错误步编号或-1表示无错）。相比传统只判断对错的评测，ProcessBench提供了更细粒度的监督信号，可用于衡量模型发现自身谬误的本领。
 
-**用途：** ProcessBench有两类典型被评模型：[arxiv.org](https://arxiv.org/pdf/2412.06559#:~:text=adaptation for various types of,2024a)一是**PRM类模型**：给定题目和完整解题过程，让PRM判断每步对错，从而定位首错步。二是**批判式模型（critic model）**：即直接用一个通用LLM通过提示来一步步审阅这份解答，指出第一个错误。例如提示可以是：“你将看到一道题和一个解题过程，请找出其中最早的错误步骤编号”。ProcessBench可以比较这两类方法的表现[arxiv.org](https://arxiv.org/pdf/2412.06559#:~:text=We conduct extensive evaluation on,critique each solution step by)[arxiv.org](https://arxiv.org/pdf/2412.06559#:~:text=critic models%2C we prompt general,We show that%2C despite 2)。初步结果发现，在简单题上，一些零样本提示的大模型（如GPT-4）充当的critic居然比特定训练的PRM效果更好[marktechpost.com](https://www.marktechpost.com/2024/12/14/alibaba-qwen-researchers-introduced-processbench-a-new-ai-benchmark-for-measuring-the-ability-to-identify-process-errors-in-mathematical-reasoning/#:~:text=The evaluation results of PROCESSBENCH,step correctness based on final)[marktechpost.com](https://www.marktechpost.com/2024/12/14/alibaba-qwen-researchers-introduced-processbench-a-new-ai-benchmark-for-measuring-the-ability-to-identify-process-errors-in-mathematical-reasoning/#:~:text=challenges,correctness of the final answer)。这说明当前PRM在跨域泛化、理解复杂数学语义上仍有差距。然而在高难度题目上，无论是PRM还是LLM批判者，表现都显著下降[marktechpost.com](https://www.marktechpost.com/2024/12/14/alibaba-qwen-researchers-introduced-processbench-a-new-ai-benchmark-for-measuring-the-ability-to-identify-process-errors-in-mathematical-reasoning/#:~:text=The evaluation results of PROCESSBENCH,step correctness based on final)。因此ProcessBench提醒我们高难推理场景下的**监督缺口**：模型可能算对了答案但推理过程荒谬，现有指标未能捕捉；或模型过程逻辑看似正确但最后一步出错，单看答案正确率也不能说明问题。ProcessBench鼓励开发更智能的过程裁判和更稳健的推理策略来应对这些挑战。
+**用途：** ProcessBench有两类典型被评模型：一是**PRM类模型**：给定题目和完整解题过程，让PRM判断每步对错，从而定位首错步。二是**批判式模型（critic model）**：即直接用一个通用LLM通过提示来一步步审阅这份解答，指出第一个错误。例如提示可以是：“你将看到一道题和一个解题过程，请找出其中最早的错误步骤编号”。ProcessBench可以比较这两类方法的表现。初步结果发现，在简单题上，一些零样本提示的大模型（如GPT-4）充当的critic居然比特定训练的PRM效果更好。这说明当前PRM在跨域泛化、理解复杂数学语义上仍有差距。然而在高难度题目上，无论是PRM还是LLM批判者，表现都显著下降。因此ProcessBench提醒我们高难推理场景下的**监督缺口**：模型可能算对了答案但推理过程荒谬，现有指标未能捕捉；或模型过程逻辑看似正确但最后一步出错，单看答案正确率也不能说明问题。ProcessBench鼓励开发更智能的过程裁判和更稳健的推理策略来应对这些挑战。
 
 **科研价值：** ProcessBench已经推动了一系列工作。例如，有人用它来训练新的PRM，使其对人类专家标注的错误更加敏感，提高PRM对各类数学错误模式的覆盖率。也有人尝试将GPT-4的逐步批判过程收集下来，蒸馏成一个小模型，以期兼具大模型广度和小模型速度。ProcessBench也启发研究者去构造其他领域的过程评测，如常识推理的ProcessBench，代码执行的ProcessBench等。目前，它已成为过程监督领域的标准测试之一，被用来验证新算法在**发现并纠正推理错误**方面的能力是否有所提升。
 
 ### 4. 过程监督 vs. 结果监督：场景适用、优势与局限
 
-**适用场景：** 结果监督适合那些**结果易判定**且不强调过程透明度的任务，比如单轮问答、分类决策等。这类任务通常只关心输出对不对，模型的中间思考路径并不影响使用。而过程监督适用于**过程复杂且结果本身不足以衡量能力**的任务，如数学、代码、逻辑推理、解题问答等。在这些任务中，我们希望模型不仅答对，还**答得对路**，因为过程本身很重要：它决定了模型的鲁棒性和可解释性[emergentmind.com](https://www.emergentmind.com/topics/process-reward-models#:~:text=A process reward model ,wider implications of process reward)。尤其在要求高可靠性的场景（医疗诊断推理、法律推理），过程监督能帮助确认模型并非“歪打正着”。
+**适用场景：** 结果监督适合那些**结果易判定**且不强调过程透明度的任务，比如单轮问答、分类决策等。这类任务通常只关心输出对不对，模型的中间思考路径并不影响使用。而过程监督适用于**过程复杂且结果本身不足以衡量能力**的任务，如数学、代码、逻辑推理、解题问答等。在这些任务中，我们希望模型不仅答对，还**答得对路**，因为过程本身很重要：它决定了模型的鲁棒性和可解释性。尤其在要求高可靠性的场景（医疗诊断推理、法律推理），过程监督能帮助确认模型并非“歪打正着”。
 
 **优势对比：** 过程监督相对于结果监督的主要优势有：
 
-- **更稠密的反馈信号：** 过程监督提供每一步的奖惩，极大缓解了稀疏奖励问题，训练更高效稳定[emergentmind.com](https://www.emergentmind.com/topics/stepwise-outcome-based-reward-models-sorms#:~:text=limitations of traditional outcome reward,reasoning%2C generation%2C and alignment tasks)。模型不会在长时间“蒙圈”后才知道对错，而是步步得到指导。
+- **更稠密的反馈信号：** 过程监督提供每一步的奖惩，极大缓解了稀疏奖励问题，训练更高效稳定。模型不会在长时间“蒙圈”后才知道对错，而是步步得到指导。
 - **错误定位与纠正：** 通过过程监督，模型学会发现并纠正自身推理中的错误环节。例如在数学题中，如果中途算错，过程监督会标记这一步错误，下次模型就能重点改进这一环节，而结果监督下模型只知道最后错了却不知错在哪。
 - **提升推理透明性：** 过程监督要求模型显式输出思维链并加以审查。这使模型决策过程对人类而言更可追踪，从而利于解释和信任。同时也方便融合人类知识（人可以检查中间步骤）。
-- **稳定性与鲁棒性：** 很多研究表明，采用过程监督后，模型在挑战性推理任务上的表现更加稳定，对提示变动和分布外问题也更稳健[emergentmind.com](https://www.emergentmind.com/topics/stepwise-outcome-based-reward-models-sorms#:~:text=limitations of traditional outcome reward,reasoning%2C generation%2C and alignment tasks)。因为模型不再依赖“一步到位”的隐秘机巧，而是真正学会了循序渐进地思考[emergentmind.com](https://www.emergentmind.com/topics/stepwise-outcome-based-reward-models-sorms#:~:text=SORMs are motivated by observed,generated rollouts as supervision)。过程监督在一定程度上减少了模型胡乱猜测得到正确答案的偶然性。
+- **稳定性与鲁棒性：** 很多研究表明，采用过程监督后，模型在挑战性推理任务上的表现更加稳定，对提示变动和分布外问题也更稳健。因为模型不再依赖“一步到位”的隐秘机巧，而是真正学会了循序渐进地思考。过程监督在一定程度上减少了模型胡乱猜测得到正确答案的偶然性。
 
 另一方面，结果监督也有一些过程监督难以比拟的优点：
 
@@ -318,9 +318,9 @@ $$
 - **较少约束模型输出形式：** 结果监督不强制模型输出思维链，模型可以自主选择最擅长的解题方式表达答案。这在一些**开放任务**中是优势。例如文学创作不需要过程链，过程反而可能束缚模型创造力。
 - **避免错误累积：** 有时过程监督可能让模型每步都暴露其不成熟的推理，反而增加犯错机会。结果监督则允许模型在内部自由探索，只提交最终答案。这类似人类考试时只写答案不给演算过程——模型可以用自己的隐秘方法得到正确答案即可。
 
-**局限与挑战：** 两种监督都有局限性。结果监督的核心局限在于**无法指导过程**，容易产生“**瞎对答案**”现象，即模型答案对了但理由完全错[marktechpost.com](https://www.marktechpost.com/2024/12/14/alibaba-qwen-researchers-introduced-processbench-a-new-ai-benchmark-for-measuring-the-ability-to-identify-process-errors-in-mathematical-reasoning/#:~:text=decline was observed across all,strategies to accurately assess the)。这在安全关键场景下非常危险，因为模型可能靠不可靠捷径得出正确输出，一旦环境略变就可能失败。过程监督的局限则在于**高依赖数据和验证器质量**。如果步骤标注不准确或不一致，会误导模型；如果验证器本身能力有限（如只能发现算术错误，但对逻辑谬误无感），那模型仍可能学会逃避验证器检查的漏洞（比如生成看似正确实则逻辑循环的解释）。另外，过程监督可能导致模型过度**冗长啰嗦**，每步都穷举，从而降低了推理效率。如何让模型在保持过程正确的同时又简洁高效，是个挑战。近期一些研究正探讨**思维链压缩**，希望找出**最短有效链**来监督模型，以减少不必要步骤。
+**局限与挑战：** 两种监督都有局限性。结果监督的核心局限在于**无法指导过程**，容易产生“**瞎对答案**”现象，即模型答案对了但理由完全错。这在安全关键场景下非常危险，因为模型可能靠不可靠捷径得出正确输出，一旦环境略变就可能失败。过程监督的局限则在于**高依赖数据和验证器质量**。如果步骤标注不准确或不一致，会误导模型；如果验证器本身能力有限（如只能发现算术错误，但对逻辑谬误无感），那模型仍可能学会逃避验证器检查的漏洞（比如生成看似正确实则逻辑循环的解释）。另外，过程监督可能导致模型过度**冗长啰嗦**，每步都穷举，从而降低了推理效率。如何让模型在保持过程正确的同时又简洁高效，是个挑战。近期一些研究正探讨**思维链压缩**，希望找出**最短有效链**来监督模型，以减少不必要步骤。
 
-**组合策略：** 最有前景的是将两种监督**优势互补**。例如，可以用少量过程标注训练一个PRM辅助模型推理（提供中间指导），但最终仍用Outcome信号来把关（只有最后答案正确才通过）[emergentmind.com](https://www.emergentmind.com/topics/stepwise-outcome-based-reward-models-sorms#:~:text=SORMs are motivated by observed,generated rollouts as supervision)。或者先用结果监督预训练一个模型学会基本任务，再用过程监督精调以纠正细节错误。OpenAI的经验是，先训练一个Outcome奖励模型，然后用于标注过程（即隐式PRM思路），相当于Outcome信号为Process信号“引路”[huggingface.co](https://huggingface.co/blog/ganqu/prime#:~:text=Face huggingface,Inspired by this)[arxiv.org](https://arxiv.org/html/2509.19199v3#:~:text=Agentic Reinforcement Learning with Implicit,and the policy model%2C)。总之，根据任务需求，灵活结合两种监督，可以达到事半功倍的效果。
+**组合策略：** 最有前景的是将两种监督**优势互补**。例如，可以用少量过程标注训练一个PRM辅助模型推理（提供中间指导），但最终仍用Outcome信号来把关（只有最后答案正确才通过）。或者先用结果监督预训练一个模型学会基本任务，再用过程监督精调以纠正细节错误。OpenAI的经验是，先训练一个Outcome奖励模型，然后用于标注过程（即隐式PRM思路），相当于Outcome信号为Process信号“引路”。总之，根据任务需求，灵活结合两种监督，可以达到事半功倍的效果。
 
 ### 5. 稳定推理闭环：PRM与TTS、回溯、早停、投票机制的结合
 
@@ -364,12 +364,12 @@ return final_answer
 
 - **Test-Time Sampling (TTS) 策略化计算：** 并非所有问题都需要耗费大量计算力。通过PRM的反馈，我们可以**自适应地调度**计算预算。例如，当PRM对当前步骤很不确定时，我们触发**多样性采样**（如上例中生成多个候选步骤）以增加探索；相反，如果PRM一路打分很高，表示模型思路顺畅可信，我们可以采取**早停**策略提前结束推理，以节省计算。这样的机制确保将宝贵的计算集中在困难环节，而不浪费在已经确定的部分，提高推理效率和可靠性。
 - **回溯纠错：** 当PRM判定某步错误时，不让模型盲目继续，而是即时回退到错误发生处重新尝试。这类似于人类解题时发现算错一步会擦掉重算。通过回溯，模型可以避免“一错到底”，而是有机会纠正之前步骤的错误，从而**减少连锁错误**。指出，在数学推理中引入这种“错即重试”机制，可将解题成功率显著提高，因为模型不会因为早期一个小错导致后续全盘皆输。
-- **早停（Early-Exit）：** 有两种早停，一是**正确早停**：如果模型已经在中途找到解答且PRM高度确信正确，就没必要啰嗦继续，直接给出答案即可。二是**错误早停**：如果模型多次尝试仍被PRM判为错误（说明进入死胡同），则及时放弃当前路径，避免浪费算力，可能采取重新开始或干脆拒答。这种策略可防止模型在错误思路上无限纠缠，从而**节约算力并避免输出无效长篇**。近期有强化学习工作（如S-GRPO[github.com](https://github.com/TsinghuaC3I/Awesome-RL-for-LRMs#:~:text=of,Generator and Verifier Together for)）直接在训练中加入早停动作，让模型学会判断何时适可而止，以优化推理长度和正确率的平衡。
+- **早停（Early-Exit）：** 有两种早停，一是**正确早停**：如果模型已经在中途找到解答且PRM高度确信正确，就没必要啰嗦继续，直接给出答案即可。二是**错误早停**：如果模型多次尝试仍被PRM判为错误（说明进入死胡同），则及时放弃当前路径，避免浪费算力，可能采取重新开始或干脆拒答。这种策略可防止模型在错误思路上无限纠缠，从而**节约算力并避免输出无效长篇**。近期有强化学习工作（如S-GRPO）直接在训练中加入早停动作，让模型学会判断何时适可而止，以优化推理长度和正确率的平衡。
 - **Verifier集成与投票：** 最终答案产出后，可以集合多个验证信号来**投票**决定是否接受该答案。例如，上例中引入了一个“小委员会”包含不同裁判：有的可能是规则（算术验证）、有的是模型（GPT-4判答案）、有的是PRM对整链评分等。通过简单投票或加权投票，如果大多数裁判认可答案，则输出；否则视情况回滚或提示不确定。这种**多裁判融合**利用了不同验证器的互补优势，减少单一裁判误判的风险。2025年的趋势表明，从单一PRM走向**多视角裁判**可以进一步提升推理可靠性。例如，一个裁判专长数学细节检查，另一个擅长常识审阅，再加上语言流畅度检查等，共同保证过程和结果万无一失。
 
 通过上述闭环机制，LLM的推理过程形成了自我监督、自我修正的循环。在这个循环中，**PRM/Verifier是核心**：它提供的评分就像汽车的刹车和方向盘，使得模型这个“驾驶员”不会一路偏离正确轨道。配合TTS调度油门、回溯掉头、早停刹车、多裁判GPS导航，整套系统才能安全抵达目标答案。实践表明，这种闭环可以将原本冗长不可靠的长链推理，转化为**短链+验证**的可控路径。在一些数学和代码基准上，引入闭环后的小模型甚至逼近或超越了大模型裸推理的表现。
 
-最后，我们将Verifier型奖励与上述闭环过程联系起来：在奖励设计的分类中，“Verifier-based Reward”强调训练时借助验证器提供奖励信号。而过程监督与闭环推理，则是将验证器贯穿于训练和推理的各个阶段，形成一个完整生态。两者在理念上一脉相承：都基于**“先判断过程对错，再决定行动”**的思想。[emergentmind.com](https://www.emergentmind.com/topics/process-reward-models#:~:text=A process reward model ,wider implications of process reward)指出PRM的出现是为了解决仅终局监督不足的问题，通过对每步决策赋予监督信号增强了模型性能。同理，在闭环推理中，我们把验证器反馈嵌入推理流程，实现了**训练-推理双层面的过程监督**。可以说，Verifier型奖励是过程监督在训练侧的体现，而闭环推理则是过程监督在测试侧的延伸。二者相辅相成，目标都是让模型**想清楚每一步**再继续，最终提升复杂推理任务的成功率和可靠性[emergentmind.com](https://www.emergentmind.com/topics/stepwise-outcome-based-reward-models-sorms#:~:text=limitations of traditional outcome reward,reasoning%2C generation%2C and alignment tasks)。
+最后，我们将Verifier型奖励与上述闭环过程联系起来：在奖励设计的分类中，“Verifier-based Reward”强调训练时借助验证器提供奖励信号。而过程监督与闭环推理，则是将验证器贯穿于训练和推理的各个阶段，形成一个完整生态。两者在理念上一脉相承：都基于**“先判断过程对错，再决定行动”**的思想。指出PRM的出现是为了解决仅终局监督不足的问题，通过对每步决策赋予监督信号增强了模型性能。同理，在闭环推理中，我们把验证器反馈嵌入推理流程，实现了**训练-推理双层面的过程监督**。可以说，Verifier型奖励是过程监督在训练侧的体现，而闭环推理则是过程监督在测试侧的延伸。二者相辅相成，目标都是让模型**想清楚每一步**再继续，最终提升复杂推理任务的成功率和可靠性。
 
 ## 总结
 

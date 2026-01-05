@@ -16,9 +16,9 @@ Chain-of-Thought (**CoT**) 是一种让大模型在回答前**显式写出中间
 
 ## 1. 快速总览（30–45 分钟）
 
-- **Reasoning LLMs 2025 综述**：先扫“系统1↔系统2、显式推理轨迹、搜索/验证器的角色”这类总框图，给今天的 CoT 放坐标。[arXiv](https://arxiv.org/pdf/2502.17419?utm_source=chatgpt.com)
-- **Test-Time Compute 2025 综述**：只看“what/how/where/how-well to scale”的框架图——理解 **Self-Consistency**、多样采样与“何时触发长思考”的位置。[arXiv](https://arxiv.org/abs/2503.24235?utm_source=chatgpt.com)
-- **Long-CoT 2025 综述**：浏览“长 CoT 的利弊与压缩”部分，为后续日程埋个伏笔（知道有“别想太长”的证据与策略）。[arXiv](https://arxiv.org/abs/2503.09567?utm_source=chatgpt.com)
+- **Reasoning LLMs 2025 综述**：先扫“系统1↔系统2、显式推理轨迹、搜索/验证器的角色”这类总框图，给今天的 CoT 放坐标。
+- **Test-Time Compute 2025 综述**：只看“what/how/where/how-well to scale”的框架图——理解 **Self-Consistency**、多样采样与“何时触发长思考”的位置。
+- **Long-CoT 2025 综述**：浏览“长 CoT 的利弊与压缩”部分，为后续日程埋个伏笔（知道有“别想太长”的证据与策略）。
 
 ------
 
@@ -28,7 +28,7 @@ Chain-of-Thought (**CoT**) 是一种让大模型在回答前**显式写出中间
 
 ### 1) 经典 CoT（few-shot / zero-shot）
 
-- **要点**：在输入中加入“思考轨迹”示例（few-shot），或用触发语（如 “Let’s think step by step.”）诱导模型显式推理（zero-shot）。 [arXiv](https://arxiv.org/abs/2201.11903)
+- **要点**：在输入中加入“思考轨迹”示例（few-shot），或用触发语（如 “Let’s think step by step.”）诱导模型显式推理（zero-shot）。 
 
 - **Zero-shot CoT**：不给示例，仅用触发语诱导“逐步思考”。
 
@@ -58,7 +58,7 @@ Chain-of-Thought (**CoT**) 是一种让大模型在回答前**显式写出中间
 
 ### 2) CoT + Self-Consistency（自一致投票）
 
-- **要点**：对同一题目进行 **多样采样**（改变温度/随机种子），再对“最终答案”做 **多数表决**。题目可被多种有效路径解出（数学、逻辑、多跳问答）。arXiv](https://arxiv.org/abs/2203.11171)
+- **要点**：对同一题目进行 **多样采样**（改变温度/随机种子），再对“最终答案”做 **多数表决**。题目可被多种有效路径解出（数学、逻辑、多跳问答）。
 
 - **投票方式**
 
@@ -82,11 +82,11 @@ Chain-of-Thought (**CoT**) 是一种让大模型在回答前**显式写出中间
   （同“经典 CoT”骨架）
   ```
 
-- **实操提示**：以 N=5/10 路径起步；若一致率低，增大 N 或改用分解式提示。[arXiv](https://arxiv.org/abs/2203.11171?utm_source=chatgpt.com)
+- **实操提示**：以 N=5/10 路径起步；若一致率低，增大 N 或改用分解式提示。
 
 ### 3) Least-to-Most（先分解后求解）
 
-- **要点**：把复杂题拆成序列子问题，从易到难逐步解决；对需要“组合/构造”的题特别有效。[arXiv](https://arxiv.org/abs/2205.10625?utm_source=chatgpt.com)
+- **要点**：把复杂题拆成序列子问题，从易到难逐步解决；对需要“组合/构造”的题特别有效。
 
 - **骨架**
 
@@ -100,8 +100,7 @@ Chain-of-Thought (**CoT**) 是一种让大模型在回答前**显式写出中间
 
 ### 4) Plan-and-Solve（先拟计划再执行）
 
-- **要点**：显式生成“计划（步骤纲要）”，再按计划填充细节，可减少“漏步/跳步”。[arXiv](https://arxiv.org/abs/2305.04091)
-
+- **要点**：显式生成“计划（步骤纲要）”，再按计划填充细节，可减少“漏步/跳步”。
 - **骨架**
 
   ```
@@ -119,7 +118,7 @@ Chain-of-Thought (**CoT**) 是一种让大模型在回答前**显式写出中间
 
 ### 5) Self-Ask（自提子问；可接检索/工具）
 
-- **要点**：先让模型**提问**自己需要的关键信息（可选地检索/计算），再汇总作答；擅长多跳（Multi-hop）问答。[arXiv](https://arxiv.org/abs/2210.03350)
+- **要点**：先让模型**提问**自己需要的关键信息（可选地检索/计算），再汇总作答；擅长多跳（Multi-hop）问答。
 
 - **骨架**
 
@@ -164,24 +163,24 @@ Chain-of-Thought (**CoT**) 是一种让大模型在回答前**显式写出中间
 ## 3. CoT趋势
 
 - **系统2/“先思考再作答”家族**（如 OpenAI **o1**、DeepSeek **R1**）：不是提示工程层面的 CoT，而是**在训练或推理预算上显式为“思考”买单**；你可以把上面的 CoT/分解/投票视作“轻量系统2”，与它们在理念上是一条线。
-- **TTS（测试时算力）**视角：把“是否触发 CoT、采样几条、是否投票”理解为 **推理时的预算分配策略**； Self-Consistency 就是 TTS 里“**扩多样性→再聚合**”的基本招。[arXiv](https://arxiv.org/abs/2503.24235)
+- **TTS（测试时算力）**视角：把“是否触发 CoT、采样几条、是否投票”理解为 **推理时的预算分配策略**； Self-Consistency 就是 TTS 里“**扩多样性→再聚合**”的基本招。
 
 ------
 
 ## 4. 典型失效模式 & 立即可用的对策
 
-- **漏步/跳步** → 用 **Plan-and-Solve** 或 **LtM** 显式强制步骤、加“中间结论”锚点。[arXiv](https://arxiv.org/abs/2305.04091)
-- **算术/符号错误** → 在模板中加入“单位/格式校验 + 最终只给一个数字/选项”的约束；必要时结合少量多样采样（N=5）。[arXiv](https://arxiv.org/abs/2203.11171)
-- **思路漂移/冗长** → 给出**固定输出槽位**（计划/步骤/中间结论/最终答案）；若仍冗长，改为 LtM 的“最小充分链”。[arXiv](https://arxiv.org/abs/2205.10625)
-- **答案不稳定** → 尝试 **Self-Consistency 投票**；若成本过高，之后会学习“短 CoT/压缩”策略。[arXiv+1](https://arxiv.org/abs/2203.11171)
+- **漏步/跳步** → 用 **Plan-and-Solve** 或 **LtM** 显式强制步骤、加“中间结论”锚点。
+- **算术/符号错误** → 在模板中加入“单位/格式校验 + 最终只给一个数字/选项”的约束；必要时结合少量多样采样（N=5）。
+- **思路漂移/冗长** → 给出**固定输出槽位**（计划/步骤/中间结论/最终答案）；若仍冗长，改为 LtM 的“最小充分链”。
+- **答案不稳定** → 尝试 **Self-Consistency 投票**；若成本过高，之后会学习“短 CoT/压缩”策略。
 
 ------
 
 ## 5. 论文
 
-1. **CoT 原始论文**（看引言+方法+图表）：理解“显式推理”的核心直觉。[arXiv](https://arxiv.org/abs/2201.11903)
-2. **Self-Consistency**（看方法+实验）：为什么“多路径→投票”显著提分。[arXiv](https://arxiv.org/abs/2203.11171)
+1. **CoT 原始论文**（看引言+方法+图表）：理解“显式推理”的核心直觉。[CoT](https://arxiv.org/abs/2201.11903)
+2. **Self-Consistency**（看方法+实验）：为什么“多路径→投票”显著提分。[Self-Consistency](https://arxiv.org/abs/2203.11171)
 3. **Least-to-Most / Plan-and-Solve / Self-Ask**（看方法示例）：掌握三种“先分解”的典型提示结构。[arXiv](https://arxiv.org/abs/2205.10625)
 4. **2025 综述扫读**（挑图表与框架）：把上述套路映射到“系统2/TTS/长-短 CoT”的更大图景。[arXiv](https://arxiv.org/pdf/2502.17419)
-5. **o1 / R1 博文/论文摘要**：理解新一代“会思考”的定位与与 CoT 的关系。[openai.com+](https://openai.com/index/learning-to-reason-with-llms)
+5. **o1 / R1 博文/论文摘要**：理解新一代“会思考”的定位与与 CoT 的关系。[openai](https://openai.com/index/learning-to-reason-with-llms)
 
