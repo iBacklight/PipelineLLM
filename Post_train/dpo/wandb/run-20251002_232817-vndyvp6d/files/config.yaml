@@ -1,0 +1,96 @@
+_wandb:
+    value:
+        cli_version: 0.22.1
+        e:
+            l7bsjw2ezxe0tybkps96pst81xl0uh8t:
+                codePath: Continual_learning/dpo/train_dpo.py
+                codePathLocal: train_dpo.py
+                cpu_count: 24
+                cpu_count_logical: 32
+                cudaVersion: "12.2"
+                disk:
+                    /:
+                        total: "154586963968"
+                        used: "134991822848"
+                email: hq1@ualberta.ca
+                executable: /home/awpc/anaconda3/envs/llm/bin/python
+                git:
+                    commit: 24bf88b278056c4d88c0bff22c61a0e9c6497f2f
+                    remote: https://github.com/iBacklight/LLM.git
+                gpu: NVIDIA GeForce RTX 4080
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ada
+                      cudaCores: 9728
+                      memoryTotal: "17171480576"
+                      name: NVIDIA GeForce RTX 4080
+                      uuid: GPU-b99eceb1-9ad7-f2a1-0ef5-b7407dbea49f
+                host: awpc-Alienware-Aurora-R15
+                memory:
+                    total: "33348997120"
+                os: Linux-5.15.0-139-generic-x86_64-with-glibc2.31
+                program: /home/awpc/studies/LLMs/Continual_learning/dpo/train_dpo.py
+                python: CPython 3.11.13
+                root: /home/awpc/studies/LLMs/Continual_learning/dpo
+                startedAt: "2025-10-03T05:28:17.881859Z"
+                writerId: l7bsjw2ezxe0tybkps96pst81xl0uh8t
+        m: []
+        python_version: 3.11.13
+        t:
+            "1":
+                - 1
+                - 5
+                - 11
+                - 41
+                - 49
+                - 51
+                - 53
+                - 71
+                - 83
+                - 84
+                - 95
+                - 98
+            "2":
+                - 1
+                - 5
+                - 11
+                - 41
+                - 49
+                - 51
+                - 53
+                - 71
+                - 83
+                - 84
+                - 95
+                - 98
+            "3":
+                - 13
+                - 15
+                - 16
+            "4": 3.11.13
+            "5": 0.22.1
+            "6": 4.56.2
+            "12": 0.22.1
+            "13": linux-x86_64
+batch_size:
+    value: 1
+beta:
+    value: 0.1
+dataset:
+    value: combined_pairs
+gradient_accumulation_steps:
+    value: 16
+learning_rate:
+    value: 1e-05
+lora_alpha:
+    value: 64
+lora_r:
+    value: 32
+max_seq_length:
+    value: 1024
+model:
+    value: unsloth/Qwen3-1.7B-unsloth-bnb-4bit
+num_train_epochs:
+    value: 1
+use_4bit:
+    value: true

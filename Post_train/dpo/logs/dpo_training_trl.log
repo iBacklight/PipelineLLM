@@ -1,0 +1,90 @@
+2025-10-02 23:34:21,391 - INFO - Output directory: ../../../models/transformers/Qwen3-1.7B/DPOTrained
+2025-10-02 23:34:21,391 - INFO - Starting DPO training with TRL and Unsloth...
+2025-10-02 23:34:21,799 - INFO - Wandb initialized: None
+2025-10-02 23:34:21,800 - INFO - Loading model and tokenizer...
+2025-10-02 23:34:27,224 - INFO - Model and tokenizer loaded successfully!
+2025-10-02 23:34:27,226 - INFO - Model parameters: 34865152 trainable
+2025-10-02 23:34:27,226 - INFO - Loading datasets...
+2025-10-02 23:34:27,230 - INFO - Loaded train dataset: 7333 samples
+2025-10-02 23:34:27,230 - INFO - Loaded eval dataset: 150 samples
+2025-10-02 23:34:27,230 - INFO - Sample data keys: ['prompt', 'chosen', 'rejected']
+2025-10-02 23:34:27,351 - INFO - Creating DPOTrainer...
+2025-10-02 23:35:25,575 - INFO - Output directory: ../../../models/transformers/Qwen3-1.7B/DPOTrained
+2025-10-02 23:35:25,575 - INFO - Starting DPO training with TRL and Unsloth...
+2025-10-02 23:35:25,992 - INFO - Wandb initialized: None
+2025-10-02 23:35:25,992 - INFO - Loading model and tokenizer...
+2025-10-02 23:35:31,316 - INFO - Model and tokenizer loaded successfully!
+2025-10-02 23:35:31,319 - INFO - Model parameters: 34865152 trainable
+2025-10-02 23:35:31,319 - INFO - Loading datasets...
+2025-10-02 23:35:31,322 - INFO - Loaded train dataset: 7333 samples
+2025-10-02 23:35:31,322 - INFO - Loaded eval dataset: 150 samples
+2025-10-02 23:35:31,322 - INFO - Sample data keys: ['prompt', 'chosen', 'rejected']
+2025-10-02 23:35:31,435 - INFO - Creating DPOTrainer...
+2025-10-02 23:36:29,941 - INFO - Output directory: ../../../models/transformers/Qwen3-1.7B/DPOTrained
+2025-10-02 23:36:29,941 - INFO - Starting DPO training with TRL and Unsloth...
+2025-10-02 23:36:30,361 - INFO - Wandb initialized: None
+2025-10-02 23:36:30,361 - INFO - Loading model and tokenizer...
+2025-10-02 23:36:36,009 - INFO - Model and tokenizer loaded successfully!
+2025-10-02 23:36:36,011 - INFO - Model parameters: 34865152 trainable
+2025-10-02 23:36:36,011 - INFO - Loading datasets...
+2025-10-02 23:36:36,014 - INFO - Loaded train dataset: 7333 samples
+2025-10-02 23:36:36,015 - INFO - Loaded eval dataset: 150 samples
+2025-10-02 23:36:36,015 - INFO - Sample data keys: ['prompt', 'chosen', 'rejected']
+2025-10-02 23:36:36,149 - INFO - Creating DPOTrainer...
+2025-10-02 23:38:31,728 - INFO - Output directory: ../../../models/transformers/Qwen3-1.7B/DPOTrained
+2025-10-02 23:38:31,728 - INFO - Starting DPO training with TRL and Unsloth...
+2025-10-02 23:38:32,127 - INFO - Wandb initialized: None
+2025-10-02 23:38:32,127 - INFO - Loading model and tokenizer...
+2025-10-02 23:38:37,736 - INFO - Model and tokenizer loaded successfully!
+2025-10-02 23:38:37,739 - INFO - Model parameters: 34865152 trainable
+2025-10-02 23:38:37,739 - INFO - Loading datasets...
+2025-10-02 23:38:37,742 - INFO - Loaded train dataset: 7333 samples
+2025-10-02 23:38:37,742 - INFO - Loaded eval dataset: 150 samples
+2025-10-02 23:38:37,743 - INFO - Sample data keys: ['prompt', 'chosen', 'rejected']
+2025-10-02 23:38:37,885 - INFO - Creating DPOTrainer...
+2025-10-02 23:41:49,660 - INFO - Output directory: ../../../models/transformers/Qwen3-1.7B/DPOTrained
+2025-10-02 23:41:49,660 - INFO - Starting DPO training with TRL and Unsloth...
+2025-10-02 23:41:50,077 - INFO - Wandb initialized: None
+2025-10-02 23:41:50,077 - INFO - Loading model and tokenizer...
+2025-10-02 23:41:55,821 - INFO - Model and tokenizer loaded successfully!
+2025-10-02 23:41:55,824 - INFO - Model parameters: 34865152 trainable
+2025-10-02 23:41:55,824 - INFO - Loading datasets...
+2025-10-02 23:41:55,827 - INFO - Loaded train dataset: 7333 samples
+2025-10-02 23:41:55,827 - INFO - Loaded eval dataset: 150 samples
+2025-10-02 23:41:55,827 - INFO - Sample data keys: ['prompt', 'chosen', 'rejected']
+2025-10-02 23:41:55,889 - INFO - Creating DPOTrainer...
+2025-10-02 23:42:08,915 - INFO - Training configuration:
+2025-10-02 23:42:08,916 - INFO -   Model: unsloth/Qwen3-1.7B-unsloth-bnb-4bit
+2025-10-02 23:42:08,916 - INFO -   Train samples: 7333
+2025-10-02 23:42:08,916 - INFO -   Eval samples: 150
+2025-10-02 23:42:08,917 - INFO -   Batch size: 1
+2025-10-02 23:42:08,917 - INFO -   Gradient accumulation: 16
+2025-10-02 23:42:08,917 - INFO -   Learning rate: 1e-05
+2025-10-02 23:42:08,917 - INFO -   Epochs: 1
+2025-10-02 23:42:08,918 - INFO -   Beta: 0.1
+2025-10-02 23:42:08,918 - INFO -   Max length: 1024
+2025-10-02 23:42:08,918 - INFO - Starting training...
+2025-10-02 23:43:37,195 - INFO - Output directory: ../../../models/transformers/Qwen3-1.7B/DPOTrained
+2025-10-02 23:43:37,195 - INFO - Starting DPO training with TRL and Unsloth...
+2025-10-02 23:43:38,462 - INFO - Wandb initialized: https://wandb.ai/ibacklight/qwen3-dpo-training/runs/1uwqnvij
+2025-10-02 23:43:38,463 - INFO - Loading model and tokenizer...
+2025-10-02 23:43:44,031 - INFO - Model and tokenizer loaded successfully!
+2025-10-02 23:43:44,034 - INFO - Model parameters: 34865152 trainable
+2025-10-02 23:43:44,034 - INFO - Loading datasets...
+2025-10-02 23:43:44,037 - INFO - Loaded train dataset: 7333 samples
+2025-10-02 23:43:44,037 - INFO - Loaded eval dataset: 150 samples
+2025-10-02 23:43:44,037 - INFO - Sample data keys: ['prompt', 'chosen', 'rejected']
+2025-10-02 23:43:44,104 - INFO - Creating DPOTrainer...
+2025-10-02 23:43:44,513 - INFO - Training configuration:
+2025-10-02 23:43:44,514 - INFO -   Model: unsloth/Qwen3-1.7B-unsloth-bnb-4bit
+2025-10-02 23:43:44,514 - INFO -   Train samples: 7333
+2025-10-02 23:43:44,514 - INFO -   Eval samples: 150
+2025-10-02 23:43:44,514 - INFO -   Batch size: 1
+2025-10-02 23:43:44,515 - INFO -   Gradient accumulation: 16
+2025-10-02 23:43:44,515 - INFO -   Learning rate: 1e-05
+2025-10-02 23:43:44,515 - INFO -   Epochs: 1
+2025-10-02 23:43:44,515 - INFO -   Beta: 0.1
+2025-10-02 23:43:44,515 - INFO -   Max length: 1024
+2025-10-02 23:43:44,515 - INFO - Starting training...
+2025-10-03 00:28:58,450 - INFO - Saving final model...
+2025-10-03 00:28:59,589 - INFO - DPO training completed successfully!

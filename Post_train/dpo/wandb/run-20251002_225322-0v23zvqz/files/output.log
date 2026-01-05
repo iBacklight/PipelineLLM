@@ -1,0 +1,54 @@
+2025-10-02 22:53:22,959 - INFO - Wandb initialized: https://wandb.ai/ibacklight/qwen3-dpo-training/runs/0v23zvqz
+2025-10-02 22:53:22,959 - INFO - Loading models...
+2025-10-02 22:53:22,959 - INFO - Cleared GPU memory cache
+2025-10-02 22:53:23,455 - INFO - Loading policy model from: Qwen/Qwen3-0.6B
+`torch_dtype` is deprecated! Use `dtype` instead!
+2025-10-02 22:53:24,759 - INFO - Applying LoRA configuration...
+trainable params: 20,185,088 || all params: 616,235,008 || trainable%: 3.2756
+2025-10-02 22:53:25,687 - INFO - Loading reference model from: Qwen/Qwen3-0.6B
+2025-10-02 22:53:26,187 - INFO - Models loaded successfully!
+2025-10-02 22:53:26,188 - INFO - Loading datasets...
+2025-10-02 22:53:26,195 - INFO - PyTorch version 2.8.0 available.
+2025-10-02 22:53:26,337 - INFO - Loaded train dataset: 7333 samples
+2025-10-02 22:53:26,338 - INFO - Loaded eval dataset: 150 samples
+2025-10-02 22:53:26,338 - INFO - Sample data keys: ['prompt', 'chosen', 'rejected']
+2025-10-02 22:53:26,341 - INFO - Training configuration:
+2025-10-02 22:53:26,341 - INFO -   Total steps: 305
+2025-10-02 22:53:26,341 - INFO -   Batch size: 1
+2025-10-02 22:53:26,341 - INFO -   Gradient accumulation: 24
+2025-10-02 22:53:26,341 - INFO -   Learning rate: 1e-05
+2025-10-02 22:53:26,341 - INFO -   Beta: 0.1
+2025-10-02 22:53:26,341 - INFO - Starting epoch 1/1
+2025-10-02 22:54:06,351 - INFO - Epoch 1, Step 10 | Loss: 0.6933 | Grad Norm: 0.0925
+2025-10-02 22:54:45,101 - INFO - Epoch 1, Step 20 | Loss: 0.6930 | Grad Norm: 0.1005
+2025-10-02 22:55:24,385 - INFO - Epoch 1, Step 30 | Loss: 0.6909 | Grad Norm: 0.1175
+2025-10-02 22:56:03,735 - INFO - Epoch 1, Step 40 | Loss: 0.7020 | Grad Norm: 0.3991
+2025-10-02 22:56:42,790 - INFO - Epoch 1, Step 50 | Loss: 0.6953 | Grad Norm: 0.1429
+2025-10-02 22:57:23,647 - INFO - Epoch 1, Step 60 | Loss: 0.6990 | Grad Norm: 0.3116
+2025-10-02 22:58:03,912 - INFO - Epoch 1, Step 70 | Loss: 0.6970 | Grad Norm: 0.1765
+2025-10-02 22:58:42,442 - INFO - Epoch 1, Step 80 | Loss: 0.6611 | Grad Norm: 0.2671
+2025-10-02 22:59:21,210 - INFO - Epoch 1, Step 90 | Loss: 0.6318 | Grad Norm: 0.2811
+2025-10-02 23:00:00,581 - INFO - Epoch 1, Step 100 | Loss: 0.8849 | Grad Norm: 0.5993
+2025-10-02 23:00:40,218 - INFO - Epoch 1, Step 110 | Loss: 0.5808 | Grad Norm: 0.6151
+2025-10-02 23:01:19,850 - INFO - Epoch 1, Step 120 | Loss: 0.4800 | Grad Norm: 0.7767
+2025-10-02 23:02:00,917 - INFO - Epoch 1, Step 130 | Loss: 0.6564 | Grad Norm: 0.6437
+2025-10-02 23:02:40,854 - INFO - Epoch 1, Step 140 | Loss: 0.6734 | Grad Norm: 1.0051
+2025-10-02 23:03:18,838 - INFO - Epoch 1, Step 150 | Loss: 0.5565 | Grad Norm: 0.8211
+2025-10-02 23:03:58,667 - INFO - Epoch 1, Step 160 | Loss: 0.5276 | Grad Norm: 0.7004
+2025-10-02 23:04:37,616 - INFO - Epoch 1, Step 170 | Loss: 0.9979 | Grad Norm: 1.2502
+2025-10-02 23:05:15,789 - INFO - Epoch 1, Step 180 | Loss: 0.2048 | Grad Norm: 1.0521
+2025-10-02 23:05:54,303 - INFO - Epoch 1, Step 190 | Loss: 1.0237 | Grad Norm: 0.9377
+2025-10-02 23:06:32,499 - INFO - Epoch 1, Step 200 | Loss: 0.1621 | Grad Norm: 2.1361
+2025-10-02 23:07:10,312 - INFO - Epoch 1, Step 210 | Loss: 0.7351 | Grad Norm: 1.2546
+2025-10-02 23:07:48,476 - INFO - Epoch 1, Step 220 | Loss: 0.8079 | Grad Norm: 1.5783
+2025-10-02 23:08:26,953 - INFO - Epoch 1, Step 230 | Loss: 0.7104 | Grad Norm: 1.6979
+2025-10-02 23:09:05,092 - INFO - Epoch 1, Step 240 | Loss: 0.0868 | Grad Norm: 1.0014
+2025-10-02 23:09:42,552 - INFO - Epoch 1, Step 250 | Loss: 0.8092 | Grad Norm: 1.1359
+2025-10-02 23:10:21,621 - INFO - Epoch 1, Step 260 | Loss: 0.5993 | Grad Norm: 0.9899
+2025-10-02 23:11:00,259 - INFO - Epoch 1, Step 270 | Loss: 0.6878 | Grad Norm: 1.2080
+2025-10-02 23:11:39,390 - INFO - Epoch 1, Step 280 | Loss: 0.4914 | Grad Norm: 1.1306
+2025-10-02 23:12:18,155 - INFO - Epoch 1, Step 290 | Loss: 0.6850 | Grad Norm: 1.8423
+2025-10-02 23:12:59,307 - INFO - Epoch 1, Step 300 | Loss: 0.5615 | Grad Norm: 1.6886
+2025-10-02 23:13:21,721 - INFO - Epoch 1 train loss: 0.6345
+2025-10-02 23:13:33,461 - INFO - Epoch 1 eval loss: 0.5910
+2025-10-02 23:13:33,461 - INFO - Saving model to: ../../../models/transformers/Qwen3-0.6B/DPOTrained/dpo_policy_lora

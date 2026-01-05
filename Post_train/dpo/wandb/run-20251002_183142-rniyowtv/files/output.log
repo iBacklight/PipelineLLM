@@ -1,0 +1,69 @@
+2025-10-02 18:31:43,613 - INFO - Wandb initialized: https://wandb.ai/ibacklight/qwen3-dpo-training/runs/rniyowtv
+2025-10-02 18:31:43,613 - INFO - Loading models...
+2025-10-02 18:31:43,613 - INFO - Cleared GPU memory cache
+2025-10-02 18:31:44,034 - INFO - Loading policy model from: Qwen/Qwen3-0.6B
+`torch_dtype` is deprecated! Use `dtype` instead!
+2025-10-02 18:31:44,545 - INFO - Applying LoRA configuration...
+trainable params: 10,092,544 || all params: 606,142,464 || trainable%: 1.6650
+2025-10-02 18:31:45,280 - INFO - Loading reference model from: Qwen/Qwen3-0.6B
+2025-10-02 18:31:45,734 - INFO - Models loaded successfully!
+2025-10-02 18:31:45,735 - INFO - Loading datasets...
+2025-10-02 18:31:45,740 - INFO - PyTorch version 2.8.0 available.
+2025-10-02 18:31:45,830 - INFO - Loaded train dataset: 7333 samples
+2025-10-02 18:31:45,831 - INFO - Loaded eval dataset: 150 samples
+2025-10-02 18:31:45,831 - INFO - Sample data keys: ['prompt', 'chosen', 'rejected']
+2025-10-02 18:31:45,833 - INFO - Training configuration:
+2025-10-02 18:31:45,834 - INFO -   Total steps: 458
+2025-10-02 18:31:45,834 - INFO -   Batch size: 1
+2025-10-02 18:31:45,834 - INFO -   Gradient accumulation: 16
+2025-10-02 18:31:45,834 - INFO -   Learning rate: 0.0002
+2025-10-02 18:31:45,834 - INFO -   Beta: 0.3
+2025-10-02 18:31:45,835 - INFO - Starting epoch 1/1
+2025-10-02 18:32:16,076 - INFO - Epoch 1, Step 10 | Loss: 0.7829
+2025-10-02 18:32:45,430 - INFO - Epoch 1, Step 20 | Loss: 0.2278
+2025-10-02 18:33:14,878 - INFO - Epoch 1, Step 30 | Loss: 3.9138
+2025-10-02 18:33:44,248 - INFO - Epoch 1, Step 40 | Loss: 0.5852
+2025-10-02 18:34:13,406 - INFO - Epoch 1, Step 50 | Loss: 0.2046
+2025-10-02 18:34:43,282 - INFO - Epoch 1, Step 60 | Loss: 2.0890
+2025-10-02 18:35:13,029 - INFO - Epoch 1, Step 70 | Loss: 0.3926
+2025-10-02 18:35:42,725 - INFO - Epoch 1, Step 80 | Loss: 0.0631
+2025-10-02 18:36:12,529 - INFO - Epoch 1, Step 90 | Loss: 4.0150
+2025-10-02 18:36:42,684 - INFO - Epoch 1, Step 100 | Loss: 0.3297
+2025-10-02 18:37:12,564 - INFO - Epoch 1, Step 110 | Loss: 0.0000
+2025-10-02 18:37:43,073 - INFO - Epoch 1, Step 120 | Loss: 0.0229
+2025-10-02 18:38:13,361 - INFO - Epoch 1, Step 130 | Loss: 0.0320
+2025-10-02 18:38:43,146 - INFO - Epoch 1, Step 140 | Loss: 0.0105
+2025-10-02 18:39:12,732 - INFO - Epoch 1, Step 150 | Loss: 1.7517
+2025-10-02 18:39:41,963 - INFO - Epoch 1, Step 160 | Loss: 0.0038
+2025-10-02 18:40:12,671 - INFO - Epoch 1, Step 170 | Loss: 0.0889
+2025-10-02 18:40:42,987 - INFO - Epoch 1, Step 180 | Loss: 5.9151
+2025-10-02 18:41:12,891 - INFO - Epoch 1, Step 190 | Loss: 2.2292
+2025-10-02 18:41:42,878 - INFO - Epoch 1, Step 200 | Loss: 1.2155
+2025-10-02 18:42:13,182 - INFO - Epoch 1, Step 210 | Loss: 2.4407
+2025-10-02 18:42:43,119 - INFO - Epoch 1, Step 220 | Loss: 0.0052
+2025-10-02 18:43:12,015 - INFO - Epoch 1, Step 230 | Loss: 3.3620
+2025-10-02 18:43:41,773 - INFO - Epoch 1, Step 240 | Loss: 0.0004
+2025-10-02 18:44:11,340 - INFO - Epoch 1, Step 250 | Loss: 1.5701
+2025-10-02 18:44:41,035 - INFO - Epoch 1, Step 260 | Loss: 0.0001
+2025-10-02 18:45:10,574 - INFO - Epoch 1, Step 270 | Loss: 0.6931
+2025-10-02 18:45:39,934 - INFO - Epoch 1, Step 280 | Loss: 0.0055
+2025-10-02 18:46:10,132 - INFO - Epoch 1, Step 290 | Loss: 1.8512
+2025-10-02 18:46:39,599 - INFO - Epoch 1, Step 300 | Loss: 0.9855
+2025-10-02 18:47:08,744 - INFO - Epoch 1, Step 310 | Loss: 0.0243
+2025-10-02 18:47:38,607 - INFO - Epoch 1, Step 320 | Loss: 2.7176
+2025-10-02 18:48:08,435 - INFO - Epoch 1, Step 330 | Loss: 4.1398
+2025-10-02 18:48:38,101 - INFO - Epoch 1, Step 340 | Loss: 2.5798
+2025-10-02 18:49:07,748 - INFO - Epoch 1, Step 350 | Loss: 0.6908
+2025-10-02 18:49:37,588 - INFO - Epoch 1, Step 360 | Loss: 2.6417
+2025-10-02 18:50:07,491 - INFO - Epoch 1, Step 370 | Loss: 0.0518
+2025-10-02 18:50:37,174 - INFO - Epoch 1, Step 380 | Loss: 0.6523
+2025-10-02 18:51:07,418 - INFO - Epoch 1, Step 390 | Loss: 0.4874
+2025-10-02 18:51:37,632 - INFO - Epoch 1, Step 400 | Loss: 0.0314
+2025-10-02 18:52:07,550 - INFO - Epoch 1, Step 410 | Loss: 0.6124
+2025-10-02 18:52:37,825 - INFO - Epoch 1, Step 420 | Loss: 0.3460
+2025-10-02 18:53:07,866 - INFO - Epoch 1, Step 430 | Loss: 0.2298
+2025-10-02 18:53:38,126 - INFO - Epoch 1, Step 440 | Loss: 1.7981
+2025-10-02 18:54:08,165 - INFO - Epoch 1, Step 450 | Loss: 2.7458
+2025-10-02 18:54:32,884 - INFO - Epoch 1 train loss: 0.9509
+2025-10-02 18:54:46,150 - INFO - Epoch 1 eval loss: 0.6767
+2025-10-02 18:54:46,150 - INFO - Saving model to: models/transformers/Qwen3-0.6B/DPOTrained/dpo_policy_lora

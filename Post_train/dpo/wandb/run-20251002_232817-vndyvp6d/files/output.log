@@ -1,0 +1,35 @@
+[34m[1mwandb[0m: Detected [huggingface_hub.inference, openai] in use.
+[34m[1mwandb[0m: Use W&B Weave for improved LLM call tracing. Install Weave with `pip install weave` then add `import weave` to the top of your script.
+[34m[1mwandb[0m: For more information, check out the docs at: https://weave-docs.wandb.ai/
+2025-10-02 23:28:18,653 - INFO - Wandb initialized: https://wandb.ai/ibacklight/qwen3-dpo-training/runs/vndyvp6d
+2025-10-02 23:28:18,653 - INFO - Loading model and tokenizer...
+==((====))==  Unsloth 2025.9.9: Fast Qwen3 patching. Transformers: 4.56.2. vLLM: 0.10.2.
+   \\   /|    NVIDIA GeForce RTX 4080. Num GPUs = 1. Max memory: 15.694 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.8.0+cu128. CUDA: 8.9. CUDA Toolkit: 12.8. Triton: 3.4.0
+\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.32.post1. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
+Unsloth: Dropout = 0 is supported for fast patching. You are using dropout = 0.01.
+Unsloth will patch all other layers, except LoRA matrices, causing a performance hit.
+Unsloth 2025.9.9 patched 28 layers with 0 QKV layers, 0 O layers and 0 MLP layers.
+2025-10-02 23:28:24,055 - INFO - Model and tokenizer loaded successfully!
+2025-10-02 23:28:24,058 - INFO - Model parameters: 34865152 trainable
+2025-10-02 23:28:24,058 - INFO - Loading datasets...
+2025-10-02 23:28:24,062 - INFO - Loaded train dataset: 7333 samples
+2025-10-02 23:28:24,062 - INFO - Loaded eval dataset: 150 samples
+2025-10-02 23:28:24,062 - INFO - Sample data keys: ['prompt', 'chosen', 'rejected']
+2025-10-02 23:28:24,259 - INFO - Creating DPOTrainer...
+Traceback (most recent call last):
+  File "/home/awpc/studies/LLMs/Continual_learning/dpo/train_dpo.py", line 347, in <module>
+    main()
+  File "/home/awpc/studies/LLMs/Continual_learning/dpo/train_dpo.py", line 300, in main
+    dpo_trainer = DPOTrainer(
+                  ^^^^^^^^^^^
+  File "/home/awpc/anaconda3/envs/llm/lib/python3.11/site-packages/unsloth/trainer.py", line 209, in new_init
+    original_init(self, *args, **kwargs)
+  File "/home/awpc/studies/LLMs/Continual_learning/dpo/unsloth_compiled_cache/UnslothDPOTrainer.py", line 2642, in __init__
+    super().__init__(
+  File "/home/awpc/studies/LLMs/Continual_learning/dpo/unsloth_compiled_cache/UnslothDPOTrainer.py", line 692, in __init__
+    if args.padding_value is not None:
+       ^^^^^^^^^^^^^^^^^^
+AttributeError: 'TrainingArguments' object has no attribute 'padding_value'

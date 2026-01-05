@@ -1,0 +1,23 @@
+2025-10-02 18:31:19,349 INFO    MainThread:57301 [wandb_setup.py:_flush():81] Current SDK version is 0.22.1
+2025-10-02 18:31:19,349 INFO    MainThread:57301 [wandb_setup.py:_flush():81] Configure stats pid to 57301
+2025-10-02 18:31:19,349 INFO    MainThread:57301 [wandb_setup.py:_flush():81] Loading settings from /home/awpc/.config/wandb/settings
+2025-10-02 18:31:19,349 INFO    MainThread:57301 [wandb_setup.py:_flush():81] Loading settings from /home/awpc/studies/LLMs/Continual_learning/dpo/wandb/settings
+2025-10-02 18:31:19,350 INFO    MainThread:57301 [wandb_setup.py:_flush():81] Loading settings from environment variables
+2025-10-02 18:31:19,350 INFO    MainThread:57301 [wandb_init.py:setup_run_log_directory():705] Logging user logs to /home/awpc/studies/LLMs/Continual_learning/dpo/wandb/offline-run-20251002_183119-fylcqnvz/logs/debug.log
+2025-10-02 18:31:19,350 INFO    MainThread:57301 [wandb_init.py:setup_run_log_directory():706] Logging internal logs to /home/awpc/studies/LLMs/Continual_learning/dpo/wandb/offline-run-20251002_183119-fylcqnvz/logs/debug-internal.log
+2025-10-02 18:31:19,350 INFO    MainThread:57301 [wandb_init.py:init():832] calling init triggers
+2025-10-02 18:31:19,350 INFO    MainThread:57301 [wandb_init.py:init():837] wandb.init called with sweep_config: {}
+config: {'model': 'Qwen/Qwen3-0.6B', 'ref_model': 'Qwen/Qwen3-0.6B', 'batch_size': 1, 'grad_accum': 16, 'learning_rate': 0.0002, 'epochs': 1, 'max_length': 1024, 'beta': 0.3, 'use_lora': True, 'use_quantization': False, 'device': 'cuda', 'dtype': 'torch.bfloat16', '_wandb': {}}
+2025-10-02 18:31:19,350 INFO    MainThread:57301 [wandb_init.py:init():880] starting backend
+2025-10-02 18:31:19,553 INFO    MainThread:57301 [wandb_init.py:init():883] sending inform_init request
+2025-10-02 18:31:19,560 INFO    MainThread:57301 [wandb_init.py:init():891] backend started and connected
+2025-10-02 18:31:19,561 INFO    MainThread:57301 [wandb_init.py:init():961] updated telemetry
+2025-10-02 18:31:19,566 INFO    MainThread:57301 [wandb_init.py:init():985] communicating run to backend with 90.0 second timeout
+2025-10-02 18:31:19,701 INFO    MainThread:57301 [wandb_init.py:init():1036] starting run threads in backend
+2025-10-02 18:31:19,768 INFO    MainThread:57301 [wandb_run.py:_console_start():2506] atexit reg
+2025-10-02 18:31:19,768 INFO    MainThread:57301 [wandb_run.py:_redirect():2354] redirect: wrap_raw
+2025-10-02 18:31:19,768 INFO    MainThread:57301 [wandb_run.py:_redirect():2423] Wrapping output streams.
+2025-10-02 18:31:19,768 INFO    MainThread:57301 [wandb_run.py:_redirect():2446] Redirects installed.
+2025-10-02 18:31:19,769 INFO    MainThread:57301 [wandb_init.py:init():1076] run started, returning control to user process
+2025-10-02 18:31:27,884 INFO    wandb-AsyncioManager-main:57301 [service_client.py:_forward_responses():80] Reached EOF.
+2025-10-02 18:31:27,885 INFO    wandb-AsyncioManager-main:57301 [mailbox.py:close():137] Closing mailbox, abandoning 0 handles.

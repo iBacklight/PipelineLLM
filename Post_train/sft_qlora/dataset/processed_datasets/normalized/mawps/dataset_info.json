@@ -1,0 +1,57 @@
+{
+  "builder_name": "csv",
+  "citation": "",
+  "config_name": "default",
+  "dataset_name": "csv",
+  "dataset_size": 339863,
+  "description": "",
+  "download_checksums": {
+    "/home/awpc/studies/LLMs/Continual_learning/sft_qlora/dataset/base_datasets/MAWPS/MAWPS.csv": {
+      "num_bytes": 320740,
+      "checksum": null
+    }
+  },
+  "download_size": 320740,
+  "features": {
+    "messages": [
+      {
+        "content": {
+          "dtype": "string",
+          "_type": "Value"
+        },
+        "role": {
+          "dtype": "string",
+          "_type": "Value"
+        }
+      }
+    ],
+    "source": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "tags": {
+      "feature": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "_type": "Sequence"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 660603,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 339863,
+      "num_examples": 1772,
+      "dataset_name": "csv"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}

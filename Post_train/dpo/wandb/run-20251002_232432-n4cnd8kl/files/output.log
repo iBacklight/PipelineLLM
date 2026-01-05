@@ -1,0 +1,39 @@
+[34m[1mwandb[0m: Detected [huggingface_hub.inference, openai] in use.
+[34m[1mwandb[0m: Use W&B Weave for improved LLM call tracing. Install Weave with `pip install weave` then add `import weave` to the top of your script.
+[34m[1mwandb[0m: For more information, check out the docs at: https://weave-docs.wandb.ai/
+2025-10-02 23:24:33,750 - INFO - Wandb initialized: https://wandb.ai/ibacklight/qwen3-dpo-training/runs/n4cnd8kl
+2025-10-02 23:24:33,750 - INFO - Loading model and tokenizer...
+==((====))==  Unsloth 2025.9.9: Fast Qwen3 patching. Transformers: 4.56.2. vLLM: 0.10.2.
+   \\   /|    NVIDIA GeForce RTX 4080. Num GPUs = 1. Max memory: 15.694 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.8.0+cu128. CUDA: 8.9. CUDA Toolkit: 12.8. Triton: 3.4.0
+\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.32.post1. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
+model.safetensors: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 1.41G/1.41G [00:34<00:00, 40.5MB/s]
+generation_config.json: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 237/237 [00:00<00:00, 295kB/s]
+tokenizer_config.json: 10.5kB [00:00, 14.9MB/s]
+vocab.json: 2.78MB [00:00, 56.0MB/s]
+merges.txt: 1.67MB [00:00, 78.6MB/s]
+added_tokens.json: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 707/707 [00:00<00:00, 1.15MB/s]
+special_tokens_map.json: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 614/614 [00:00<00:00, 997kB/s]
+tokenizer.json: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████| 11.4M/11.4M [00:00<00:00, 18.2MB/s]
+chat_template.jinja: 4.67kB [00:00, 7.58MB/s]
+Unsloth: Dropout = 0 is supported for fast patching. You are using dropout = 0.01.
+Unsloth will patch all other layers, except LoRA matrices, causing a performance hit.
+Unsloth 2025.9.9 patched 28 layers with 0 QKV layers, 0 O layers and 0 MLP layers.
+2025-10-02 23:25:15,936 - INFO - Model and tokenizer loaded successfully!
+2025-10-02 23:25:15,938 - INFO - Model parameters: 34865152 trainable
+2025-10-02 23:25:15,938 - INFO - Loading datasets...
+2025-10-02 23:25:15,942 - INFO - Loaded train dataset: 7333 samples
+2025-10-02 23:25:15,942 - INFO - Loaded eval dataset: 150 samples
+2025-10-02 23:25:15,942 - INFO - Sample data keys: ['prompt', 'chosen', 'rejected']
+Traceback (most recent call last):
+  File "/home/awpc/studies/LLMs/Continual_learning/dpo/train_dpo.py", line 348, in <module>
+    main()
+  File "/home/awpc/studies/LLMs/Continual_learning/dpo/train_dpo.py", line 296, in main
+    training_args = get_training_arguments(CONFIG)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/awpc/studies/LLMs/Continual_learning/dpo/train_dpo.py", line 241, in get_training_arguments
+    return TrainingArguments(
+           ^^^^^^^^^^^^^^^^^^
+TypeError: TrainingArguments.__init__() got an unexpected keyword argument 'max_seq_length'

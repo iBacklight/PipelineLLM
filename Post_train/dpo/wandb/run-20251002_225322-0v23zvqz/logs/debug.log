@@ -1,0 +1,26 @@
+2025-10-02 22:53:22,200 INFO    MainThread:12546 [wandb_setup.py:_flush():81] Current SDK version is 0.22.1
+2025-10-02 22:53:22,200 INFO    MainThread:12546 [wandb_setup.py:_flush():81] Configure stats pid to 12546
+2025-10-02 22:53:22,201 INFO    MainThread:12546 [wandb_setup.py:_flush():81] Loading settings from /home/awpc/.config/wandb/settings
+2025-10-02 22:53:22,201 INFO    MainThread:12546 [wandb_setup.py:_flush():81] Loading settings from /home/awpc/studies/LLMs/Continual_learning/dpo/wandb/settings
+2025-10-02 22:53:22,201 INFO    MainThread:12546 [wandb_setup.py:_flush():81] Loading settings from environment variables
+2025-10-02 22:53:22,201 INFO    MainThread:12546 [wandb_init.py:setup_run_log_directory():705] Logging user logs to /home/awpc/studies/LLMs/Continual_learning/dpo/wandb/run-20251002_225322-0v23zvqz/logs/debug.log
+2025-10-02 22:53:22,201 INFO    MainThread:12546 [wandb_init.py:setup_run_log_directory():706] Logging internal logs to /home/awpc/studies/LLMs/Continual_learning/dpo/wandb/run-20251002_225322-0v23zvqz/logs/debug-internal.log
+2025-10-02 22:53:22,201 INFO    MainThread:12546 [wandb_init.py:init():832] calling init triggers
+2025-10-02 22:53:22,201 INFO    MainThread:12546 [wandb_init.py:init():837] wandb.init called with sweep_config: {}
+config: {'model': 'Qwen/Qwen3-0.6B', 'ref_model': 'Qwen/Qwen3-0.6B', 'batch_size': 1, 'grad_accum': 24, 'learning_rate': 1e-05, 'epochs': 1, 'max_length': 1024, 'beta': 0.1, 'use_lora': True, 'use_quantization': False, 'device': 'cuda', 'dtype': 'torch.bfloat16', '_wandb': {}}
+2025-10-02 22:53:22,201 INFO    MainThread:12546 [wandb_init.py:init():880] starting backend
+2025-10-02 22:53:22,410 INFO    MainThread:12546 [wandb_init.py:init():883] sending inform_init request
+2025-10-02 22:53:22,417 INFO    MainThread:12546 [wandb_init.py:init():891] backend started and connected
+2025-10-02 22:53:22,417 INFO    MainThread:12546 [wandb_init.py:init():961] updated telemetry
+2025-10-02 22:53:22,421 INFO    MainThread:12546 [wandb_init.py:init():985] communicating run to backend with 90.0 second timeout
+2025-10-02 22:53:22,870 INFO    MainThread:12546 [wandb_init.py:init():1036] starting run threads in backend
+2025-10-02 22:53:22,956 INFO    MainThread:12546 [wandb_run.py:_console_start():2506] atexit reg
+2025-10-02 22:53:22,956 INFO    MainThread:12546 [wandb_run.py:_redirect():2354] redirect: wrap_raw
+2025-10-02 22:53:22,956 INFO    MainThread:12546 [wandb_run.py:_redirect():2423] Wrapping output streams.
+2025-10-02 22:53:22,956 INFO    MainThread:12546 [wandb_run.py:_redirect():2446] Redirects installed.
+2025-10-02 22:53:22,959 INFO    MainThread:12546 [wandb_init.py:init():1076] run started, returning control to user process
+2025-10-02 23:13:33,947 INFO    MainThread:12546 [wandb_run.py:_finish():2272] finishing run ibacklight/qwen3-dpo-training/0v23zvqz
+2025-10-02 23:13:33,948 INFO    MainThread:12546 [wandb_run.py:_atexit_cleanup():2471] got exitcode: 0
+2025-10-02 23:13:33,948 INFO    MainThread:12546 [wandb_run.py:_restore():2453] restore
+2025-10-02 23:13:33,948 INFO    MainThread:12546 [wandb_run.py:_restore():2459] restore done
+2025-10-02 23:13:34,647 INFO    MainThread:12546 [wandb_run.py:_footer_sync_info():3869] logging synced files

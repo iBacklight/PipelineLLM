@@ -1,0 +1,57 @@
+{
+  "fields": [
+    {
+      "name": "messages",
+      "type": {
+        "children": [
+          {
+            "name": "item",
+            "type": {
+              "children": [
+                {
+                  "name": "content",
+                  "type": {},
+                  "nullable": true,
+                  "metadata": {}
+                },
+                {
+                  "name": "role",
+                  "type": {},
+                  "nullable": true,
+                  "metadata": {}
+                }
+              ]
+            },
+            "nullable": true,
+            "metadata": {}
+          }
+        ]
+      },
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "source",
+      "type": {},
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "tags",
+      "type": {
+        "children": [
+          {
+            "name": "item",
+            "type": {},
+            "nullable": true,
+            "metadata": {}
+          }
+        ]
+      },
+      "nullable": true,
+      "metadata": {}
+    }
+  ],
+  "metadata": {},
+  "dictionaries": {}
+}

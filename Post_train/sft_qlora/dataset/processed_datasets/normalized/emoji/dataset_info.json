@@ -1,0 +1,57 @@
+{
+  "builder_name": "json",
+  "citation": "",
+  "config_name": "default",
+  "dataset_name": "json",
+  "dataset_size": 9095645,
+  "description": "",
+  "download_checksums": {
+    "/home/awpc/studies/LLMs/Continual_learning/sft_qlora/dataset/base_datasets/DPO-zh-en-emoji/merged_dpo_zh_emoji_for_firefly.jsonl": {
+      "num_bytes": 9466473,
+      "checksum": null
+    }
+  },
+  "download_size": 9466473,
+  "features": {
+    "messages": [
+      {
+        "content": {
+          "dtype": "string",
+          "_type": "Value"
+        },
+        "role": {
+          "dtype": "string",
+          "_type": "Value"
+        }
+      }
+    ],
+    "source": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "tags": {
+      "feature": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "_type": "Sequence"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 18562118,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 9095645,
+      "num_examples": 2449,
+      "dataset_name": "json"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}

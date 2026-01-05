@@ -1,0 +1,12 @@
+{"time":"2025-10-02T18:31:43.035071419-06:00","level":"INFO","msg":"stream: starting","core version":"0.22.1"}
+{"time":"2025-10-02T18:31:43.33292534-06:00","level":"INFO","msg":"stream: created new stream","id":"rniyowtv"}
+{"time":"2025-10-02T18:31:43.333013824-06:00","level":"INFO","msg":"stream: started","id":"rniyowtv"}
+{"time":"2025-10-02T18:31:43.333103907-06:00","level":"INFO","msg":"handler: started","stream_id":"rniyowtv"}
+{"time":"2025-10-02T18:31:43.333125359-06:00","level":"INFO","msg":"sender: started","stream_id":"rniyowtv"}
+{"time":"2025-10-02T18:31:43.333126703-06:00","level":"INFO","msg":"writer: started","stream_id":"rniyowtv"}
+{"time":"2025-10-02T18:54:46.638640845-06:00","level":"INFO","msg":"handler: operation stats","stats":{"operations":[{"desc":"updating run metadata","runtime_seconds":0.000962139}],"total_operations":1}}
+{"time":"2025-10-02T18:54:47.085616051-06:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-10-02T18:54:47.276607564-06:00","level":"INFO","msg":"stream: closing","id":"rniyowtv"}
+{"time":"2025-10-02T18:54:47.276625557-06:00","level":"INFO","msg":"handler: closed","stream_id":"rniyowtv"}
+{"time":"2025-10-02T18:54:47.276688934-06:00","level":"INFO","msg":"sender: closed","stream_id":"rniyowtv"}
+{"time":"2025-10-02T18:54:47.276699508-06:00","level":"INFO","msg":"stream: closed","id":"rniyowtv"}

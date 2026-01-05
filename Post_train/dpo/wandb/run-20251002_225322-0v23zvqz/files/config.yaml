@@ -1,0 +1,92 @@
+_wandb:
+    value:
+        cli_version: 0.22.1
+        e:
+            83ebvn6y59u19hky5im7aygub4casaow:
+                codePath: Continual_learning/dpo/mini_dpo.py
+                codePathLocal: mini_dpo.py
+                cpu_count: 24
+                cpu_count_logical: 32
+                cudaVersion: "12.2"
+                disk:
+                    /:
+                        total: "154586963968"
+                        used: "133454815232"
+                email: hq1@ualberta.ca
+                executable: /home/awpc/anaconda3/envs/llm/bin/python
+                git:
+                    commit: 24bf88b278056c4d88c0bff22c61a0e9c6497f2f
+                    remote: https://github.com/iBacklight/LLM.git
+                gpu: NVIDIA GeForce RTX 4080
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ada
+                      cudaCores: 9728
+                      memoryTotal: "17171480576"
+                      name: NVIDIA GeForce RTX 4080
+                      uuid: GPU-b99eceb1-9ad7-f2a1-0ef5-b7407dbea49f
+                host: awpc-Alienware-Aurora-R15
+                memory:
+                    total: "33348997120"
+                os: Linux-5.15.0-139-generic-x86_64-with-glibc2.31
+                program: /home/awpc/studies/LLMs/Continual_learning/dpo/mini_dpo.py
+                python: CPython 3.11.13
+                root: /home/awpc/studies/LLMs/Continual_learning/dpo
+                startedAt: "2025-10-03T04:53:22.199040Z"
+                writerId: 83ebvn6y59u19hky5im7aygub4casaow
+        m: []
+        python_version: 3.11.13
+        t:
+            "1":
+                - 1
+                - 5
+                - 11
+                - 41
+                - 49
+                - 53
+                - 71
+                - 98
+            "2":
+                - 1
+                - 5
+                - 11
+                - 41
+                - 49
+                - 51
+                - 53
+                - 71
+                - 98
+            "3":
+                - 2
+                - 13
+                - 15
+                - 16
+            "4": 3.11.13
+            "5": 0.22.1
+            "6": 4.56.2
+            "12": 0.22.1
+            "13": linux-x86_64
+batch_size:
+    value: 1
+beta:
+    value: 0.1
+device:
+    value: cuda
+dtype:
+    value: torch.bfloat16
+epochs:
+    value: 1
+grad_accum:
+    value: 24
+learning_rate:
+    value: 1e-05
+max_length:
+    value: 1024
+model:
+    value: Qwen/Qwen3-0.6B
+ref_model:
+    value: Qwen/Qwen3-0.6B
+use_lora:
+    value: true
+use_quantization:
+    value: false

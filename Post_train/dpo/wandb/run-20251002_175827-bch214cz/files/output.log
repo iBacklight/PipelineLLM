@@ -1,0 +1,41 @@
+2025-10-02 17:58:27,831 - INFO - Wandb initialized: https://wandb.ai/ibacklight/qwen3-dpo-training/runs/bch214cz
+2025-10-02 17:58:27,831 - INFO - Loading models...
+2025-10-02 17:58:28,263 - INFO - Loading policy model from: Qwen/Qwen3-4B-Instruct-2507
+2025-10-02 17:58:28,263 - INFO - Configuring 4-bit quantization...
+`torch_dtype` is deprecated! Use `dtype` instead!
+2025-10-02 17:58:28,990 - INFO - We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [00:03<00:00,  1.09s/it]
+2025-10-02 17:58:32,471 - INFO - Applying LoRA configuration...
+trainable params: 33,030,144 || all params: 4,055,498,240 || trainable%: 0.8145
+2025-10-02 17:58:32,884 - INFO - Loading reference model from: ../../../models/unsloth/Qwen3/Qwen3-4B-Instruct-2507/models--unsloth--Qwen3-4B-Instruct-2507/snapshots/992063681dc2f7de4ee976110199552935cad284
+/home/awpc/studies/LLMs/Continual_learning/dpo/mini_dpo.py:472: UserWarning: WARNING: Unsloth should be imported before transformers, peft to ensure all optimizations are applied. Your code may run slower or encounter memory issues without these optimizations.
+
+Please restructure your imports with 'import unsloth' at the top of your file.
+  from unsloth import FastLanguageModel
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+2025-10-02 17:58:33,506 - INFO - PyTorch version 2.8.0 available.
+INFO 10-02 17:58:33 [__init__.py:216] Automatically detected platform cuda.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+2025-10-02 17:58:36,211 - INFO - Using Unsloth to load reference model...
+==((====))==  Unsloth 2025.9.9: Fast Qwen3 patching. Transformers: 4.56.2. vLLM: 0.10.2.
+   \\   /|    NVIDIA GeForce RTX 4080. Num GPUs = 1. Max memory: 15.694 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.8.0+cu128. CUDA: 8.9. CUDA Toolkit: 12.8. Triton: 3.4.0
+\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.32.post1. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
+Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:03<00:00,  1.82s/it]
+2025-10-02 17:58:41,544 - INFO - Unsloth loading failed: `.to` is not supported for `8-bit` bitsandbytes models. Please use the model as it is, since the model has already been set to the correct devices and casted to the correct `dtype`.
+2025-10-02 17:58:41,545 - INFO - Falling back to transformers...
+2025-10-02 17:58:41,614 - INFO - We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+Loading checkpoint shards: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:05<00:00,  2.53s/it]
+2025-10-02 17:58:46,722 - INFO - Models loaded successfully!
+2025-10-02 17:58:46,723 - INFO - Loading datasets...
+2025-10-02 17:58:46,744 - INFO - Loaded train dataset: 7333 samples
+2025-10-02 17:58:46,745 - INFO - Loaded eval dataset: 150 samples
+Traceback (most recent call last):
+  File "/home/awpc/studies/LLMs/Continual_learning/dpo/mini_dpo.py", line 758, in <module>
+    main()
+  File "/home/awpc/studies/LLMs/Continual_learning/dpo/mini_dpo.py", line 677, in main
+    train_ds = PrefDataset.from_datasets(train_dataset, logger)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'PrefDataset' has no attribute 'from_datasets'

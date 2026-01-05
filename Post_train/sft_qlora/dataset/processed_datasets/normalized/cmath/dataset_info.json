@@ -1,0 +1,57 @@
+{
+  "builder_name": "json",
+  "citation": "",
+  "config_name": "default",
+  "dataset_name": "json",
+  "dataset_size": 90174,
+  "description": "",
+  "download_checksums": {
+    "/home/awpc/studies/LLMs/Continual_learning/sft_qlora/dataset/base_datasets/cmath/cmath_dev.jsonl": {
+      "num_bytes": 119574,
+      "checksum": null
+    }
+  },
+  "download_size": 119574,
+  "features": {
+    "messages": [
+      {
+        "content": {
+          "dtype": "string",
+          "_type": "Value"
+        },
+        "role": {
+          "dtype": "string",
+          "_type": "Value"
+        }
+      }
+    ],
+    "source": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "tags": {
+      "feature": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "_type": "Sequence"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 209748,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 90174,
+      "num_examples": 600,
+      "dataset_name": "json"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}

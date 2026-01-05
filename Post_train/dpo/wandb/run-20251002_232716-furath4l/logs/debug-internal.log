@@ -1,0 +1,11 @@
+{"time":"2025-10-02T23:27:16.315925446-06:00","level":"INFO","msg":"stream: starting","core version":"0.22.1"}
+{"time":"2025-10-02T23:27:16.59660198-06:00","level":"INFO","msg":"stream: created new stream","id":"furath4l"}
+{"time":"2025-10-02T23:27:16.596642481-06:00","level":"INFO","msg":"handler: started","stream_id":"furath4l"}
+{"time":"2025-10-02T23:27:16.596697896-06:00","level":"INFO","msg":"stream: started","id":"furath4l"}
+{"time":"2025-10-02T23:27:16.596810517-06:00","level":"INFO","msg":"writer: started","stream_id":"furath4l"}
+{"time":"2025-10-02T23:27:16.596821208-06:00","level":"INFO","msg":"sender: started","stream_id":"furath4l"}
+{"time":"2025-10-02T23:27:22.42328711-06:00","level":"INFO","msg":"stream: closing","id":"furath4l"}
+{"time":"2025-10-02T23:27:22.769510097-06:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-10-02T23:27:23.076641159-06:00","level":"INFO","msg":"handler: closed","stream_id":"furath4l"}
+{"time":"2025-10-02T23:27:23.076817417-06:00","level":"INFO","msg":"sender: closed","stream_id":"furath4l"}
+{"time":"2025-10-02T23:27:23.076837266-06:00","level":"INFO","msg":"stream: closed","id":"furath4l"}
