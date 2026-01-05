@@ -1,4 +1,4 @@
-# Day 6 LLM与持续学习
+# Day 7 LLM与持续学习
 
 [TOC]
 

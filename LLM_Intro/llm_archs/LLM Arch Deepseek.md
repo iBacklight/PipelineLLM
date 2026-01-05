@@ -16,7 +16,7 @@ DeepSeek 系列模型在学术界和工业界最大的标签是**“极致的性
 
 ## 核心技术：MLA (Multi-Head Latent Attention)
 
-这是DeepSeek V2中提出的核心注意力机制，也是你作为网络优化研究者需要重点关注的模块。
+这是DeepSeek V2中提出的核心注意力机制，也是我们作为网络优化研究者需要重点关注的模块。
 
 ### 0. KV Cache
 
@@ -82,9 +82,9 @@ $$
 
 KV cache 能复用的前提是投影矩阵 `W`不会变。几个典型例外/边界：
 
-1. **如果你在生成过程中更新了权重（在线学习/训练态）**：旧 KV 立刻失效，必须重算。所以一般训练阶段不能使用KV cache，
-2. **非因果 self-attn（比如 encoder 的双向注意力）且输入会变**：如果你“追加”token 并要求所有位置都能看新 token，那旧位置的表示会变，cache就不成立。
-3. **位置编码处理方式发生变化**： cache 里的 K/V 隐含了位置信息（RoPE/绝对位置等）。如果你在同一段 cache 上“平移位置”或改 RoPE 设定，可能要重算或做 RoPE 的特殊缓存策略。
+1. **如果我们在生成过程中更新了权重（在线学习/训练态）**：旧 KV 立刻失效，必须重算。所以一般训练阶段不能使用KV cache，
+2. **非因果 self-attn（比如 encoder 的双向注意力）且输入会变**：如果我们“追加”token 并要求所有位置都能看新 token，那旧位置的表示会变，cache就不成立。
+3. **位置编码处理方式发生变化**： cache 里的 K/V 隐含了位置信息（RoPE/绝对位置等）。如果我们在同一段 cache 上“平移位置”或改 RoPE 设定，可能要重算或做 RoPE 的特殊缓存策略。
 
 只有推理阶段`W` 固定 + causal mask 保证旧 token 表示不变 → **旧 KV 永远有效**，所以可以 cache。
 
@@ -277,7 +277,7 @@ DeepSeek V3 彻底去掉了 Aux Loss。
 - **定位**：对标 OpenAI o1，专注于**推理 (Reasoning)** 能力。
 - **核心方法**：**大规模强化学习 (RL)**。
   - **DeepSeek-R1-Zero**：不使用任何 SFT（监督微调）数据，直接在 Base 模型上应用纯 RL 算法。模型在训练过程中自然涌现出了“自我反思”、“长链条思维 (CoT)”以及“Aha moments”。
-  - **GRPO (Group Relative Policy Optimization)**：这是 R1 的算法核心（你应该会很感兴趣）。
+  - **GRPO (Group Relative Policy Optimization)**：这是 R1 的算法核心（我们应该会很感兴趣）。
     - 传统的 PPO 需要一个巨大的 Value Model (Critic) 来估计优势函数，这在 671B 的模型上极其昂贵。
     - **GRPO** 抛弃了 Critic 模型。它通过对同一个 Prompt 采样一组输出 (Group)，计算它们在组内的相对优势。这极大地节省了 RL 训练的显存和计算资源。
 - **蒸馏 (Distillation)**：R1 的思维链数据被用来蒸馏更小的模型（如 Qwen-32B-Distill），证明了强大的推理能力可以被“传授”给小模型。
@@ -417,12 +417,12 @@ DeepSeek-V3.2 将 **Reasoning (推理)**、**Agent (智能体)** 和 **Human Ali
 
 把Top-P/top-k采样的内容的mask也记录下来共训练使用。通常我们认为 **Top-p (Nucleus Sampling)** 只是为了让生成的文本更多样化，是一个纯粹的“推理策略”。但在 RL（特别是 PPO/GRPO）的训练过程中，**Keep Sampling Mask** 的存在是为了解决一个严肃的数学严谨性问题：**重要性采样（Importance Sampling）中的动作空间（Action Space）不匹配问题。**举例：
 
-想象你在做一道单选题，选项有 A, B, C, D, E。
+想象我们在做一道单选题，选项有 A, B, C, D, E。
 
-- **推理时 ($\pi_{old}$)**：Top-p采样觉得 D 和 E 太离谱了，直接把它们mask了。你只能在 {A, B, C} 里选，最后选了 A。
+- **推理时 ($\pi_{old}$)**：Top-p采样觉得 D 和 E 太离谱了，直接把它们mask了。我们只能在 {A, B, C} 里选，最后选了 A。
   - 选 A 的概率是 $P(A) / (P(A)+P(B)+P(C))$。
 - **训练时 ($\pi_\theta$)**：现在我们要评估选 A 选得好不好。
-  - **如果不带 Mask**：你是在 {A, B, C, D, E} 里面重新计算 A 的概率。
+  - **如果不带 Mask**：我们是在 {A, B, C, D, E} 里面重新计算 A 的概率。
     - 概率变成 $P'(A) / (P'(A)+P'(B)+P'(C)+P'(D)+P'(E))$。
   - **带 Keep Sampling Mask**：我们强行把 D 和 E 也挡住，只允许模型在 {A, B, C} 的范围内重新评估 A 的概率。
 
