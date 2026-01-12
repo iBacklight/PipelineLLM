@@ -6,46 +6,41 @@
 
 ## LLM 介绍
 
-LLM，即 Large Language Model，中文名为大语言模型或大型语言模型，是一种相较传统语言模型参数量更多、在更大规模语料上进行预训练的语言模型。大模型时间线梳理：
+LLM，即 Large Language Model，中文名为大语言模型或大型语言模型，是一种相较传统语言模型参数量更多、在更大规模语料上进行预训练的语言模型。
 
-| 时间           | 开源 / 可下载权重 LLM                                        | 闭源 / 专有 LLM（API/产品）                                  |
-| -------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| **2022.11**    | —                                                            | **OpenAI – ChatGPT**（基于 GPT-3.5）                         |
-| **2023.02**    | **Meta – LLaMA**；**复旦 – MOSS**                            | —                                                            |
-| **2023.03**    | **Stanford – Alpaca**；**Vicuna**；**智谱 – ChatGLM**        | **OpenAI – GPT-4**；**百度 – 文心一言**；**Anthropic – Claude**；**Google – Bard** |
-| **2023.04**    | **阿里 – 通义千问（Qwen beta）**；**Stability – StableLM**   | **商汤 – 日日新**                                            |
-| **2023.05**    | **TII – Falcon**；（研究向）**Microsoft – Phi-1**            | **讯飞 – 星火**；**Google – PaLM 2**                         |
-| **2023.06**    | **智谱 – ChatGLM2**；**上海AI Lab – InternLM（书生·浦语）**；**百川 – BaiChuan**；**虎博 – TigerBot** | **360 – 智脑**                                               |
-| **2023.07**    | **Meta – LLaMA 2**                                           | **Anthropic – Claude 2**；**华为 – 盘古3.0**                 |
-| **2023.08**    | **Qwen-7B/等开放权重**（阿里首次放权重 7B/后续尺寸） ([阿里云](https://www.alibabacloud.com/help/en/model-studio/what-is-qwen-llm?utm_source=chatgpt.com)) | —                                                            |
-| **2023.09**    | **BaiChuan 2**                                               | **Google – Gemini（品牌亮相，后续 1.x/2.x 系列）**；**腾讯 – 混元** ([维基百科](https://en.wikipedia.org/wiki/Gemini_(language_model)?utm_source=chatgpt.com)) |
-| **2023.11**    | **零一万物 – Yi**；**幻方 – DeepSeek（V系列起步）**          | **xAI – Grok**                                               |
-| **2024.02**    | **Google – Gemma**（开源家族） ([阿里云](https://www.alibabacloud.com/help/en/model-studio/what-is-qwen-llm?utm_source=chatgpt.com)) | —                                                            |
-| **2024.03**    | **Databricks – DBRX（MoE，开放模型许可）**                   | —                                                            |
-| **2024.04**    | **Meta – LLaMA 3（首批 8B/70B 等）** ([Meta AI](https://ai.meta.com/blog/meta-llama-3/?utm_source=chatgpt.com)) | —                                                            |
-| **2024.05**    | —                                                            | **Google – Gemini 1.5 Pro/Flash（广泛可用）** ([Google Cloud](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions?utm_source=chatgpt.com)) |
-| **2024.06**    | **Qwen 2（家族更新）**；**DeepSeek-V2（开源）**；**Mistral Large 2（部分开放）** ([维基百科](https://en.wikipedia.org/wiki/Qwen?utm_source=chatgpt.com)) | —                                                            |
-| **2024.07**    | **Meta – LLaMA 3.1（扩到 405B 版本、长上下文）** ([Meta AI](https://ai.meta.com/blog/meta-llama-3-1/?utm_source=chatgpt.com)) | —                                                            |
-| **2024.09–12** | **Gemini 2.0 Flash（实验→默认）**（这是 Google 自家闭源产品线，但列于对照参照）；**Mixtral 8×7B/8×22B 持续更新（Apache-2.0）** ([The Verge](https://www.theverge.com/news/603821/google-gemini-flash-2-0-ai-app?utm_source=chatgpt.com)) | **Google – Gemini 2.0/2.5 系列持续更新（闭源）** ([维基百科](https://en.wikipedia.org/wiki/Gemini_(language_model)?utm_source=chatgpt.com)) |
-| **2025.01**    | —                                                            | **OpenAI – o3-mini（推理/思考系列，小型）**；（月末）**DeepSeek – R1（推理型，MIT 许可）** ([维基百科](https://en.wikipedia.org/wiki/OpenAI_o3?utm_source=chatgpt.com)) |
-| **2025.02**    | —                                                            | **OpenAI – o4-mini（同日配套）**；**Gemini 2.0 Pro（闭源）** ([OpenAI](https://openai.com/index/introducing-o3-and-o4-mini/?utm_source=chatgpt.com)) |
-| **2025.03**    | **Google – Gemma 3（开源家族续作）**                         | —                                                            |
-| **2025.04**    | —                                                            | **OpenAI – o3（GA 发布）/o3-pro（6-10 上线）** ([OpenAI](https://openai.com/index/introducing-o3-and-o4-mini/?utm_source=chatgpt.com)) |
-| **2025.05**    | —                                                            | **Anthropic – Claude 4（发布 Opus 4 / Sonnet 4）** ([Anthropic](https://www.anthropic.com/news/claude-4?utm_source=chatgpt.com)) |
-| **2025.08–09** | （社区与厂商多轮更新）                                       | **OpenAI – GPT-5（正式发布页面）**（闭源/服务） ([OpenAI](https://openai.com/index/introducing-gpt-5/?utm_source=chatgpt.com)) |
+主流大模型时间线梳理：
 
-主流模型对比
-
-| 模型                              | 开/闭源  | 主要架构                   | 参数量（总/激活）                                            | 上下文长度（tokens）                                         | 模态                                 | 要点/备注                                                    |
-| --------------------------------- | -------- | -------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------ | ------------------------------------------------------------ |
-| **Llama 4（Scout / Maverick）**   | 开放权重 | **MoE**（多专家）          | *Scout*：约 **109B/17B 激活**；*Maverick*：更大（报道称 ~402B 级别，激活仍 ~17B） | *官方博文与生态文章称* **10M**（Scout）；另有模型卡示例 **128K** 用法（不同渠道数值不一） | 文本/图像（原生多模态）              | Meta 博文宣称“前所未有”的长上下文，Cloudflare 亦称 Scout **10,000,000**；HF 模型卡示例写到 **128K**（工程默认值）；属 **开放权重**许可而非完全开源。([Meta AI](https://ai.meta.com/blog/llama-4-multimodal-intelligence/?utm_source=chatgpt.com)) |
-| **Qwen 3**（家族）                | 开放权重 | Dense/混合（家族多尺⼨）   | 官方未统一披露全家族参数；如 **Qwen3-32B** 为 **32.8B**      | **32K**（官方博文）；部分变体与后续“Next”公告扩展到 **262K** | 文本/多模态（视型号）                | Qwen3 博文指“最终阶段用长上下文数据将上下文扩到 32K”；HF 上 **Qwen3-32B** 模型卡写 32.8B 与 **32K**；“Qwen3-Next”页面提到 **262,144** tokens。([Qwen](https://qwenlm.github.io/blog/qwen3/?utm_source=chatgpt.com)) |
-| **Kimi K2**（Moonshot）           | 开放权重 | **MoE**                    | **1T 总参**，**32B 激活**；384 专家、每步选 8                | **128K**（模型卡/官方资料）；**K2-0905** 更新**256K**        | 文本/多模态（视版本）                | 官方页与 HF 模型卡列明 **1T/32B（MoE）**、默认 **128K**；9/05 版卡片与官号公告称 **256K**。([GitHub](https://github.com/MoonshotAI/Kimi-K2?utm_source=chatgpt.com)) |
-| **DeepSeek V3.1**                 | 开放权重 | **MoE**                    | 模型卡标注**Total 671B / Activated 37B**                     | **128K**（模型卡）                                           | 文本（部分推理/“thinking”模式）      | HF 模型卡清楚给出 **671B/37B**、**128K**，并区分 base/instruct、thinking 与非 thinking。([Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V3.1?utm_source=chatgpt.com)) |
-| **GPT-5**（OpenAI）               | **闭源** | （未披露；外界多推测 MoE） | **未披露**                                                   | **400K**（官方页面；各子型 mini/nano 同为 400K）             | 多模态（文/图/视）                   | 官方页给出 **400K** 上下文与价格分档；参数规模未披露。([OpenAI](https://openai.com/gpt-5/?utm_source=chatgpt.com)) |
-| **Gemini 2.5 Pro**（Google）      | **闭源** | （未披露）                 | **未披露**                                                   | **1,000,000**（2M “coming soon”）                            | **原生多模态**（文/音/图/视频/代码） | 官方博客称 2.5 Pro “今天”提供 **100 万**上下文，并预告 **200 万**；Vertex 文档亦描述 2.5 Flash/Pro 的“thinking/推理”能力。([blog.google](https://blog.google/technology/google-deepmind/gemini-model-thinking-updates-march-2025/?utm_source=chatgpt.com)) |
-| **Claude 4（Opus 4 / Sonnet 4）** | **闭源** | （未披露）                 | **未披露**                                                   | **200K**（发布时）；**Sonnet 4** 后续**提升至 1M**（API beta/企业通道） | 多模态（视型号）                     | 官方发布与后续公告：发布时 **200K**；8/12 更新 Sonnet 4 **1M**（beta/企业/Vertex/Bedrock）。([Anthropic](https://www.anthropic.com/news/claude-4?utm_source=chatgpt.com)) |
-| **Grok**（xAI；Grok-3/4）         | **闭源** | （未披露；推理向变体）     | **未披露**                                                   | **Grok-3：131,072**（官方文档页）；**Grok-4-Fast：2,000,000**（xAI docs 概览）；亦有媒体整理称 Grok-3 公告“理论 1M” | 多模态（视型号）                     | 建议以 xAI 官方文档为准：Grok-3 文档页 **131,072**；xAI 概览/公告提到 **Grok-4-Fast 2M**。第三方文章宣称值更大时需谨慎。([docs.x.ai](https://docs.x.ai/docs/models/grok-3?utm_source=chatgpt.com)) |
+| **时间**    | **开源 / 可下载权重 LLM**                                    | **闭源 / 专有 LLM（API/产品）**                              |
+| ----------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **2022.11** | —                                                            | **OpenAI** – ChatGPT (GPT-3.5)                               |
+| **2023.02** | **Meta** – LLaMA; **复旦** – MOSS                            | —                                                            |
+| **2023.03** | **Stanford** – Alpaca; Vicuna; **智谱** – ChatGLM            | **OpenAI** – GPT-4; **百度** – 文心一言; **Anthropic** – Claude; **Google** – Bard |
+| **2023.04** | **阿里** – 通义千问 (Qwen beta); **Stability** – StableLM    | **商汤** – 日日新                                            |
+| **2023.05** | **TII** – Falcon                                             | **Microsoft** – Phi-1; **讯飞** – 星火; **Google** – PaLM 2  |
+| **2023.06** | **智谱** – ChatGLM2; **InternLM** (书生); **百川** – Baichuan | **360** – 智脑                                               |
+| **2023.07** | **Meta** – LLaMA 2                                           | **Anthropic** – Claude 2; **华为** – 盘古3.0                 |
+| **2023.08** | **Qwen-7B** (阿里首次开源)                                   | —                                                            |
+| **2023.09** | **Baichuan 2**                                               | **Google** – Gemini (1.0 Pro/Ultra); **腾讯** – 混元         |
+| **2023.11** | **01.AI** – Yi; **幻方** – DeepSeek (V1)                     | **xAI** – Grok-1                                             |
+| **2024.02** | **Google** – Gemma (2B/7B)                                   | —                                                            |
+| **2024.03** | **Databricks** – DBRX                                        | —                                                            |
+| **2024.04** | **Meta** – LLaMA 3 (8B/70B); **Microsoft** – Phi-3           | —                                                            |
+| **2024.05** | **DeepSeek** – V2                                            | **OpenAI** – GPT-4o; **Google** – Gemini 1.5 Pro/Flash       |
+| **2024.06** | **Qwen 2** (家族更新)                                        | **Anthropic** – Claude 3.5 Sonnet                            |
+| **2024.07** | **Meta** – LLaMA 3.1 (405B); **Mistral** – Large 2           | —                                                            |
+| **2024.09** | **Qwen 2.5** (全系列); **Molmo** (多模态)                    | **OpenAI** – o1-preview / o1-mini                            |
+| **2024.12** | **DeepSeek** – V3 (671B MoE)                                 | **Google** – Gemini 2.0 Flash (Preview); **Sora** (正式公测) |
+| **2025.01** | **DeepSeek** – R1 (推理模型, MIT许可); **Qwen** – Qwen2.5-VL; **Moonshot** - Kimi K1.5 | **OpenAI** – o3-mini (1月31日); **Alibaba** – Qwen2.5-Max    |
+| **2025.02** | —                                                            | **Google** – Gemini 2.0 Pro / Flash-Lite; **OpenAI** – GPT-4.5; **Anthropic** – Claude 3.7 Sonnet; **xAI** – Grok-3 |
+| **2025.03** | **Alibaba** – QwQ-32B (推理小模型)                           | **Google** – Gemini 2.5 Pro                                  |
+| **2025.04** | **Meta** – LLaMA 4 (Scout/Maverick); **Alibaba** – Qwen 3    | **OpenAI** – o3 (4月16日) / o4-mini                          |
+| **2025.06** | **MiniMax-M1**                                               | **Google** – Gemini 2.5 Flash; **Google** – Imagen 4         |
+| **2025.07** | **Meta** – LLaMA 4 (400B+ 版本); **Moonshot** - Kimi K2; **GLM-4.5** | **xAI** – Grok 5                                             |
+| **2025.08** | —                                                            | **OpenAI** – GPT-5 (8月7日); **Anthropic** – Claude Sonnet 4.1 |
+| **2025.09** | **Alibaba** – Qwen 3-VL / Qwen3-Next                         | **Anthropic** – Claude Sonnet 4.5                            |
+| **2025.10** | **MiniMax-M2**                                               |                                                              |
+| **2025.11** | **Moonshot** - Kimi K2 Thinking                              | **Google** – Gemini 3 Pro (11月18日); **Anthropic** – Claude Opus 4.5; **OpenAI** – GPT 5.2 |
+| **2025.12** | **MiniMax-M2.1**; **DeepSeek**-V3.2; **GLM-4.7**             | **Google** – Gemini 3 Deep Think;                            |
 
 <br>
 
@@ -59,10 +54,11 @@ LLM，即 Large Language Model，中文名为大语言模型或大型语言模�
 
 #### 1. 预训练的目标/任务形式
 
-主流任务：**Causal Language Modeling（CLM，自回归下一词预测）**
+主流任务：**Causal Language Modeling（CLM，自回归（Autoregressive, AR）下一词预测）**
 
-- 目标：给定前缀 $x_{1:t-1}$，最大化 $\log p_\theta(x_t \mid x_{1:t-1})$。
-- 训练时对序列内**每个位置**做预测并累加损失（掩掉 padding）。
+- 目标：给定前缀 $x_{1:t-1}$，最大化 $\log p_\theta(x_t \mid x_{1:t-1})$。让模型有涌现的生成能力。
+- 用语言描述来描述的话，生成式预训练本质上是一种**自监督学习**过程。它采用下一个词预测（Next Token Prediction）作为优化目标，通过将原始文本序列进行因果偏移（Causal Shift，通俗讲就是数据与label错位），使模型在每一个位置上，利用当前已观测到的所有 token 序列作为上下文，去预测原始序列中紧随其后的真实 token。。
+- 训练时对序列内**每个位置**做预测并累加损失，这点与SFT只计算回答的部分有区别。
 - 优势：与推理时“从左到右生成”一致，**单一目标即可覆盖通用能力**（理解、生成、推理可在大规模下涌现）。
 - 代表：GPT 系列、LLaMA、Qwen、DeepSeek 等。
 
@@ -83,7 +79,7 @@ LLM，即 Large Language Model，中文名为大语言模型或大型语言模�
 **2.1 数据来源（多模态先略过文本主线）**
 
 - **网页大语料**：Common Crawl 衍生、开源维基、新闻、论坛（要重度清洗）。
-- **书籍/论文**：Books、ArXiv（版权合规尤需注意）。
+- **书籍/论文**：Books、ArXiv（需注意版权合规）。
 - **代码**：Git 代码库、包管理生态；语言覆盖 Python/JS/C++/Java/Go 等。
 - **对话/指令**：开源指令数据、合成（self-instruct）、转写或产品日志（需严格脱敏与授权）。
 - **多语种**：Wikipedia 多语、CCMatrix/CCAligned、新闻平行语料等。
@@ -106,7 +102,7 @@ LLM，即 Large Language Model，中文名为大语言模型或大型语言模�
 
 #### 3. 分词与位置编码
 
-- **Tokenizer**：byte-level BPE（Byte Pair Embedding, 合并字符可以**用最少的token来表示语料库**，这也是 BPE 算法的主要目标，即**数据的压缩**。） / SentencePiece（unigram/BPE）。
+- **Tokenizer**：byte-level BPE（Byte Pair Embedding, 合并字符可以**用最少的token来表示语料库**，这也是 BPE 算法的主要目标，即**数据的压缩**。） / SentencePiece（unigram/BPE）。*详见我们再Background的basic部分*。
   - **词表大小**：开源家族常见 32k–100k；多语/代码场景倾向更大词表。
   - **字节友好**：byte-fallback/纯 byte 编码（避免 OOV）。
 - **位置编码**：RoPE 为主流；**长上下文**常用 RoPE 变体（NTK、YaRN、Dynamic RoPE 等）。
@@ -147,20 +143,20 @@ LLM，即 Large Language Model，中文名为大语言模型或大型语言模�
 
 **4.5 多卡并行分布是训练**
 
-**预训练规模律**（Scaling Law）**：以 $C \approx 6ND$ 粗略刻画训练计算量（$C$：FLOPs，$N$：参数量，$D$：训练 tokens）。经验上常据此确定“**算力最优**”的数据量与模型大小配比。
+**预训练规模律**（Scaling Law）：以 $C \approx 6ND$ 粗略刻画训练计算量（$C$：硬件总计算量，单位FLOPs，$N$：参数量，$D$：训练 tokens）。经验上常据此确定“算力最优”的数据量与模型大小配比。
 
-**训练数据规模**：文本中给出两个经验配比：
+**训练数据规模**（经验配比）：
 
 - OpenAI（示例）：**训练 tokens $\approx 1.7\times N$**（如 175B 需 ~300B tokens）。
 - LLaMA 系列经验：**训练 tokens $\approx 20\times N$**（如 175B 用 ~3.5T tokens 以追求更优）。
 
-**算力与时长**：预训练极耗资源；即使 1B 模型也常需多卡集群；文中举例：百亿级模型 ~**1024×A100 训练 1 个月**，十亿级模型 **~256×A100 2–3 天**。
+**算力与时长**：预训练极耗资源；即使 1B 模型也常需多卡集群；举例：百亿级模型 ~**1024×A100 训练 1 个月**，十亿级模型 **~256×A100 2–3 天**。
 
 **分布式训练是刚需**：
 
 - **数据并行（DP）**：同一份模型复制到多卡、喂不同 mini-batch，汇总梯度再同步更新（总 batch = 各卡 batch 之和）。
 - **模型并行（MP）**：当单卡放不下模型时，把网络按“层/张量切片”分到多卡。
-- 在 DP/MP 基础上，演化出 **张量并行（TP）**、**流水线并行（PP）**、**3D 并行（DP+TP+PP）**、以及 **ZeRO（Zero Redundancy Optimizer）** 等更高效策略。
+- 在 DP（Data Parallelism）/MP 基础上，演化出 **张量并行（TP）**、**流水线并行（PP）**、**3D 并行（DP+TP+PP）**、以及 **ZeRO（Zero Redundancy Optimizer）** 等更高效策略。
 
 **主流框架**：**DeepSpeed、Megatron-LM、ColossalAI** 等，其中 **DeepSpeed** 的使用最广。
 
@@ -205,17 +201,16 @@ $$
 $$
 
 - **label = 下一个 token**（shifted labels）。
-- **mask**：只在非 padding/非特殊段计算 loss。
-- **可选细节**：
+- **mask**：在非 padding/非特殊段计算 loss，不区分query和response。
+- **一些可选的细节**：
   - **class weighting**：对特殊/罕见 token 加权（很少用）。
-  - **label smoothing**：极少量（如 0.1）可抗过拟合，但生成质量影响不确定；主流不加该做法。
   - **温度/entropy 正则**：在合成数据阶段偶有使用，非标配。
 - **MoE 额外损失**：路由均衡/负载损失（例如 auxiliary loss with coeff 0.01–0.1）。
 
 **5.2 预训练 vs 对齐（后训练）**
 
 - **预训练**：纯无监督/弱监督（CLM 为主）。
-- **对齐阶段**（不属于预训练）：SFT（监督微调）、RM/PRM、RLHF、DPO/IPO、知识蒸馏、工具/RAG 集成等。
+- **对齐阶段**（不属于预训练）：SFT（监督微调）、RM/PRM、RLHF、DPO/IPO等。
 
 
 
@@ -255,8 +250,43 @@ $$
 **2.2 构造与清洗**
 
 - 来源：人工标注、产品日志脱敏、自指令（self-instruct）、过滤后的网络数据、模型生成 + 人工筛选、拒绝采样（rejection sampling）。
+
 - 清洗：去重（文档/段落/n-gram）、语言检测、长度/熵/脏词过滤、PII/版权合规。
+
+  ```python
+  # 简单去重
+  import hashlib
+  import json
+  from datasets import load_dataset, Dataset
+  def dedup(ds: Dataset) -> Dataset:
+      def _hash(ex):
+          # Handle cases where 'messages' field might not exist
+          if "messages" not in ex:
+              # If no messages field, create a hash from all available data
+              s = json.dumps(ex, ensure_ascii=False, sort_keys=True)
+          else:
+              s = json.dumps(ex["messages"], ensure_ascii=False)
+          return {"_h": hashlib.md5(s.encode("utf-8")).hexdigest()}
+      
+      ds = ds.map(_hash, num_proc=1)
+      
+      # Use filter to remove duplicates
+      seen_hashes = set()
+      def _filter_duplicates(ex):
+          h = ex["_h"] # hash of the example
+          if h in seen_hashes:
+              return False
+          seen_hashes.add(h)
+          return True
+      
+      ds = ds.filter(_filter_duplicates)
+      return ds.remove_columns(["_h"])
+  ```
+
+  
+
 - 质量打分：启发式 + 小模型（critic）或 RM 预筛，剔除无效/幻觉/有害样本。
+
 - **混合配比**：通用:代码:数学:检索/工具:安全 ≈ 6:2:1:0.5:0.5（示例，需项目化调参）；中后期可提高困难/稀有域占比（curriculum）。
 
 
@@ -280,30 +310,116 @@ $$
 
 
 
-#### 4. 损失与掩码（核心实现）
+#### 4. 损失与掩码
 
-- **目标**：标准 token-level **Cross-Entropy**（CE）。
-- **只对 ASSISTANT 的输出 token 计损失**；**不**对 system/user/分隔符计算。
+- **目标**：标准 **token-level** **Cross-Entropy**（CE）。
+- **只对 ASSISTANT 的输出 （response）token 计损失**；不对 system/user/分隔符等做loss计算。
 - **多轮对话**：对每轮的 assistant 段分别打 1，其余打 0（loss mask）。
 - **Label shift**：CLM 方式（预测下一个 token），忽略 pad。
 
-**伪代码（关键掩码）**：
+这里需要注意的是，标准的 CE loss (Softmax + NLL Loss ) 公式如下：
+
+$$
+p_i = \frac{e^{x_i}}{\sum_{j} e^{x_j}} \quad (\text{Softmax})
+$$
+
+$$
+L = -\log(p_{target}) \quad (\text{NLL Loss})
+$$
+
+如果在代码里直接这样写，计算量大且不稳定。PyTorch 实际上计算的是融合后的公式：
+
+$$L = -\log\left( \frac{e^{x_{target}}}{\sum_{j} e^{x_j}} \right)$$
+
+利用对数除法性质 $\log(a/b) = \log a - \log b$，展开为：
+
+$$
+L = -x_{target} + \log\left( \sum_{j} e^{x_j} \right)
+$$
+
+这个公式分为两部分：
+
+1. **$-x_{target}$**：这一项很简单，直接取 Ground Truth 对应的 Logit 取反。
+2. **$\log(\sum e^{x_j})$**：这一项是所有 Logits 的指数和的对数（Log-Sum-Exp）。**这是最危险的一步。**如果直接计算 $\sum e^{x_j}$，会遇到**溢出（Overflow）**问题。
+
+为了解决这个问题，PyTorch 使用了 Log-Sum-Exp 技巧。恒等式推导：设 $M = \max(x)$ 为当前样本 logits 中的最大值。
+$$
+\begin{aligned} \log\left(\sum_{j} e^{x_j}\right) &= \log\left(\sum_{j} e^{x_j - M + M}\right) \\ &= \log\left(\sum_{j} e^{x_j - M} \cdot e^M\right) \\ &= \log\left(e^M \cdot \sum_{j} e^{x_j - M}\right) \\ &= M + \log\left(\sum_{j} e^{x_j - M}\right) \end{aligned}
+$$
+
+
+**这个变换的精髓在于：**
+
+- 我们将所有 logits 减去了最大值 $M$。
+- 变换后，最大的指数项变成了 $e^{M-M} = e^0 = 1$。
+- 其余所有项都是 $e^{\text{负数}}$，范围在 $(0, 1]$ 之间。
+- **结果：** 彻底杜绝了上溢出（Overflow），极大缓解了下溢出（Underflow）。
+
+**下面我们看看在代码中怎么实现**，首先掌握输入的部分
+
+| **步骤**                 | **数据状态 / 对应代码**               | **示例张量 (简化版)**  |
+| ------------------------ | ------------------------------------- | ---------------------- |
+| **原始 IDs** (input ids) | `ids` (包含所有 token)                | `[10, 20, 30, 40, 50]` |
+| **角色标注**             | `roles` (区分用户与助手)              | `[U, U, A, A, A]`      |
+| **构造掩码**             | `loss_mask = (roles == ASSISTANT_ID)` | `[0, 0, 1, 1, 1]`      |
+
+**SFT CE loss 代码**：
 
 ```python
-# ids: [B, T]; roles: 同形状标注 token 归属（sys/user/assistant）
-labels = ids.clone()
-loss_mask = (roles == ASSISTANT_ID).int()  # 只监督助手段
-# 移位：预测下一 token
-input_ids  = ids[:, :-1]
-target_ids = labels[:, 1:]
-loss_mask  = loss_mask[:, 1:]
+import torch.nn.functional as F
+def compute_sft_loss(model, ids, roles, assistant_id, pad_id):
+    """
+    参数:
+    - model: 语言模型 (AutoModelForCausalLM)
+    - ids: [B, T] 离散的 token 序列
+    - roles: [B, T] 标记每个 token 的归属 (SYSTEM_ID, USER_ID, ASSISTANT_ID)
+    - assistant_id: 助手的角色标识符
+    - pad_id: 填充字符的 ID
+    """
+    B, T = ids.shape
+    device = ids.device
 
-logits = model(input_ids, attention_mask=causal_mask)  # [B,T-1,V]
-loss_all = F.cross_entropy(
-    logits.reshape(-1, V), target_ids.reshape(-1),
-    reduction="none", ignore_index=PAD_ID
-).view(B, -1)
-loss = (loss_all * loss_mask).sum() / (loss_mask.sum().clamp_min(1))
+    # 1. 构造 Labels 和 Loss Mask
+    # 我们只希望模型在助理回答的部分产生梯度
+    labels = ids.clone()
+    # loss_mask: 只有 Assistant 的部分为 1，其余为 0
+    loss_mask = (roles == assistant_id).to(torch.float32)
+
+    # 2. 移位对齐 (Shift Right)
+    # 自回归任务的核心：t 位置预测 t+1 位置
+    # input_ids  [B, 0 : T-1]
+    # target_ids [B, 1 : T]
+    input_ids = ids[:, :-1].contiguous()# 切片操作（[:, :-1]）在 PyTorch 中不会改变内存布局，只是改变了视图。
+    target_ids = labels[:, 1:].contiguous()# 调用 .contiguous()可以让tensor的内存在切片后连续
+    loss_mask = loss_mask[:, 1:].contiguous()
+
+    # 3. 构造 Attention Mask (处理 Padding)
+    # 模型不应该关注 Padding Token
+    attention_mask = (input_ids != pad_id).to(torch.long)
+
+    # 4. 前向传播
+    outputs = model(input_ids, attention_mask=attention_mask)
+    logits = outputs.logits  # [B, T-1, Vocab_Size]，即每个词都有logits
+    V = logits.size(-1) # 取出Vocab_Size数值
+
+    # 5. 计算损失
+    # reduction="none" 保证我们拿到每个 token 的原始 loss，以便后续应用 mask
+    # 输入的是原始Logits,在CE种计算softmax概率和NLL损失
+    loss_all = F.cross_entropy(
+        logits.view(-1, V), # [B*(T-1), V]
+        target_ids.view(-1), # [B*(T-1)]， 每一行logits对应一个target，最大化target对应的token的值
+        reduction="none", 
+        ignore_index=pad_id
+    ).view(B, -1)
+
+    # 6. 应用 Loss Mask 并求平均
+    # 只计算助手部分的 Loss，忽略 Prompt 和 Padding
+    # clamp_min(1) 防止除以 0（例如整个 batch 都没有回答的情况）
+    num_active_tokens = loss_mask.sum()
+    loss = (loss_all * loss_mask).sum() / num_active_tokens.clamp_min(1.0) # 计算期望来归一化，消除长度影响，提升梯度量级的稳定性
+    # 这样无论 Batch 大小如何，无论 Assistant 说了多少话，每个有效 token 对参数更新的平均贡献是一致的
+
+    return loss, num_active_tokens 
 ```
 
 
@@ -390,7 +506,7 @@ loss = (loss_all * loss_mask).sum() / (loss_mask.sum().clamp_min(1))
 
 
 
-#### 12. 最小可用实现（HuggingFace TRL 样式）
+#### 12. 最小可用实现（HuggingFace TRL 样式带LoRA微调）
 
 ```py
 from trl import SFTTrainer
@@ -479,7 +595,7 @@ $$
   \hat{\theta} = \arg\max_\theta L(\theta;\mathcal{D})
   $$
 
-但是再实际优化里更常用 **对数似然 (Log-Likelihood)**：
+但是再实际优化里更常用**对数似然 (Log-Likelihood)**：
 $$
 \ell(\theta) = \log L(\theta;\mathcal{D}) = \sum_{i=1}^n \log p_\theta(x^{(i)})
 $$
@@ -508,142 +624,78 @@ $$
 H(q, p_\theta) = - \log p_\theta(y_{\text{true}}|x)
 $$
 
-
 **1. 设定与记号**
 
 - $z\in\mathbb{R}^C$：logits
-- $\hat y=\mathrm{softmax}(z)$，$\hat y_i=\frac{e^{z_i}}{\sum_k e^{z_k}}$
+- $p_i=\mathrm{softmax}(z)$，$\hat y_i=\frac{e^{z_i}}{\sum_k e^{z_k}}$
 - $y\in\{0,1\}^C$ 为 one-hot 真值
 - 词表大小 $V=C$（LLM 常见 $3\! \sim\!20$ 万）
-
 
 **2. 两种损失的定义**
 
 **MSE（对概率）**
 $$
-L_{\mathrm{MSE}}=\frac{1}{C}\sum_{i=1}^C(\hat y_i-y_i)^2
+L_{\mathrm{MSE}}=\frac{1}{C}\sum_{i=1}^C( p_i-y_i)^2
 $$
 **CE（交叉熵 / 负对数似然）**
 $$
-L_{\mathrm{CE}}=-\sum_{i=1}^C y_i\log\hat y_i
+L_{\mathrm{CE}}=-\sum_{i=1}^C y_i\log p_i
 $$
-如果是one hot 编码，CE只有当真实值才有贡献
+**3. 问题1：梯度消失**
+
+我们回顾一下 SFT 模型的输出流：
 $$
-L_{\mathrm{CE-OH}}=-\log\hat y_j, \text{   }y_j = 1, y_{other}=0
-$$
-
-
-
-**3. 梯度推导与“雅可比在哪儿”**
-
-**3.1** 先对 $\hat y$ 求导（不涉及logits, 故也不涉及softmax雅可比）
-
-- **MSE：**
-
-$$
-\frac{\partial L_{\mathrm{MSE}}}{\partial \hat y_j}
-=\frac{2}{C}(\hat y_j-y_j)
-\quad\Rightarrow\quad
-\nabla_{\hat y}L_{\mathrm{MSE}}=\frac{2}{C}(\hat y-y)
+\text{Logits } z \xrightarrow{\text{Softmax}} \text{Probabilities } p \xrightarrow{\text{Loss}} L
 $$
 
-- **CE：**
 
+如果是 Cross-Entropy (CE): $L_{CE} = -\sum y_i \log p_i$
+
+对 Logits $z$ 求导（反向传播）+ 链式法则（[推导参照这篇](https://math.stackexchange.com/questions/3993037/computing-the-gradient-of-cross-entropy-loss)）：
 $$
-\frac{\partial L_{\mathrm{CE}}}{\partial \hat y_j}
-=-\frac{y_j}{\hat y_j}
-\quad\Rightarrow\quad
-\nabla_{\hat y}L_{\mathrm{CE}}= -\,\frac{y}{\hat y}\;
-$$
-
-> 这一步都**没有** softmax 的雅可比，因为还没把 $\hat y$ 写成 $\hat y(z)$。
-
-**3.2** 再对 $z$ (logits) 求导（此时必须乘上 softmax 雅可比）
-
-softmax 的雅可比：
-$$
-J=\frac{\partial \hat y}{\partial z}
-=\mathrm{diag}(\hat y)-\hat y\hat y^\top
+\frac{\partial L_{CE}}{\partial z} = p - y
 $$
 
-- **MSE（对 $z$ 的梯度），要使用链式法则：**
+- 分析： 梯度是线性的。如果模型预测 $p=0.1$ 而真实标签 $y=1$，梯度就是 $-0.9$。误差越大，回传的梯度越大，修正力度越强。模型会收到一个恒定的、强有力的修正信号。
+
+#### **如果是 MSE:**
 
 $$
-\nabla_{z}L_{\mathrm{MSE}}
-=\Big(\frac{\partial L}{\partial \hat y}\Big)^\top\!\!J
-=\frac{2}{C}\,J(\hat y-y)
+L_{MSE} = \sum (p_i - y_i)^2
 $$
 
-> 这里**明确出现**了雅可比 $J$。
 
-- **CE（对 $z$ 的梯度），要使用链式法则：**
 
+利用链式法则对 Logits $z$ 求导：
 $$
-\nabla_{z}L_{\mathrm{CE}}
-=\Big(\frac{\partial L}{\partial \hat y}\Big)^\top\!\!J
-=\left(-\,\frac{y}{\hat y}\right)^\top\!J
-=\hat y-y
+\frac{\partial L_{MSE}}{\partial z} = \frac{\partial L}{\partial p} \cdot \frac{\partial p}{\partial z}
 $$
 
-> CE 的结果**简化**为 $\hat y-y$。直观理解：$-y/\hat y$ 与 $J$ 的结构在链式法则中“对消/合并”，所以最终**看不到显式的 $J$**。这样看就是线性、简洁、数值稳定，**即便预测很错时也有强信号**推动收敛。
->
-> - 如果预测概率 $p$ 太小（比真实 y 低），梯度为负，推动 logit 上升。
-> - 如果预测概率 $p$ 太大（比真实 y 高），梯度为正，推动 logit 下降。
 
-**4. 大词表下的梯度量级对比（LLM 关键）**
-
-训练初期常见 $\hat y\approx \mathrm{Uniform}(1/V)$。
-
-- **CE：**
-   正类 $t$ 的分量：$\hat y_t-1\approx \tfrac{1}{V}-1\approx -1$（**常数量级，不消失**）；
-   负类分量：$\hat y_j\approx 1/V$，整体仍有可观合力。
-
-- **MSE：**
-   先有 $(\hat y-y)$（正类 $\approx -1$，负类 $\approx 1/V$），再乘 $J$；而
-  $$
-  J_{ii}\approx \hat y_i(1-\hat y_i)\approx \tfrac{1}{V},\quad
-  J_{ij}\approx -\tfrac{1}{V^2}\ (i\neq j)
-  $$
-  于是
-  $$
-  \nabla_{z}L_{\mathrm{MSE}}
-  =\frac{2}{C}\,J(\hat y-y)
-  \quad\text{量级}\ \sim\ \mathcal{O}(1/V)
-  $$
-  结论：**在 $V$ 很大时，MSE 的对-logits 梯度被 $J$ 再压小一层，训练非常慢**；而 CE 的对-logits 梯度为常数量级。
+其中 $\frac{\partial p}{\partial z}$ 是 Softmax 的导数，即 $p(1-p)$（类似于 Sigmoid 导数形式）。
+$$
+\frac{\partial L_{MSE}}{\partial z} = 2(p - y) \cdot p(1 - p)
+$$
 
 
+注意这一项 $p(1-p)$。假设模型现在非常“蠢”，对于正确答案（$y=1$），它非常自信地预测了 0（$p \approx 0$）。
 
-**5. 统计目标与评测一致性**
+- 此时误差 $(p-y)$ 很大（$-1$），我们希望模型赶紧改。
+- 但是！因为 $p \approx 0$，导致 **$p(1-p) \approx 0$**。
+- **结果：总梯度 $\approx 0$。**
 
-- 语言建模等价于**最大似然**：最大化真实下一个 token 的概率；
-   **CE 正是负对数似然**，与任务假设完全匹配。
-- 评测指标 **Perplexity（PPL）** 与 CE 一一对应：$\mathrm{PPL}=\exp(\text{CE})$。
-   ⇒ **用 CE 训练就直接最小化 PPL**；MSE 与 PPL 不严格对齐。
+**结论：** 当模型**错得离谱且非常自信**时，MSE 的梯度反而会消失，导致模型“学不动”。这被称为**学习停滞（Learning Stagnation）**。而 CE 在这种情况下梯度最大，会狠狠地惩罚模型。
 
+**4. 概率假设：分类 vs 回归**
 
-**6. 优化性质与几何（更快更稳）**
+从最大似然估计（MLE）的角度看，损失函数的选择取决于你对数据分布的假设。
 
-- **CE 的 Hessian 与 Fisher 信息相关**，天然适配 softmax 分类的几何；
-- 在正确类概率接近 1 的“边界区”，CE 仍能给出合适的更新结构（对错类按概率线性惩罚）；
-- **MSE 额外乘 $J$**，使得本就小的更新进一步缩小，更易停滞。
+- MSE 对应高斯分布（Gaussian Distribution）：MSE 推导自假设数据噪声服从正态分布 $y \sim N(\mu, \sigma^2)$。这适用于回归任务（比如预测房价、预测 Reward Model 的分数），因为这些值是连续的实数。
+- CE 对应多项分布（Multinomial Distribution）：SFT 的本质是从词表 $V$ 中选一个词，这是离散的类别事件。最大化对数似然 $\log \prod p(y_i|x)$ 自然等价于最小化 Cross-Entropy, 比较符合云册下一个token的需求。
 
-7. **自回归和多分类两者关系**
+直观理解：
 
-- **自回归**：强调 **序列生成方式**（从左到右，递归依赖历史）。
-- **分类**：强调 **单步预测目标**（softmax over vocab，CE loss）。
-
-换句话说：
-
-- 从整体看：语言模型是 **自回归模型**（序列生成的 factorization）。
-- 从单步训练看：它是 **大规模多分类任务**（在词表上选下一个 token）。
-
-**总结： 为什么不用MSE？**
-
-- **目标对齐**：CE = 负对数似然，直接最优 PPL；MSE 与语言建模目标不完全匹配。
-- **梯度效率**：CE 对 logits 的梯度 $\hat y-y$ 为常数量级；MSE 需乘 $J$，在大词表下 **$\mathcal{O}(1/V)$**，学习极慢。
-- **优化与稳定**：CE 具有更好的几何与曲率性质；MSE 容易在边界处动力不足。
-- **工程生态**：训练/评测/解码工具链都以 CE 为中心。
+在文本生成中，“Apple”和“Orange”是两个正交的类别（One-hot 向量）。它们之间的距离不是欧氏距离。MSE 试图在概率空间拉直线距离，这在几何上是不自然的；而 CE 衡量的是两个概率分布的 KL 散度（KL Divergence），这才是衡量分布相似度的正确尺子。
 
 <br>
 
@@ -696,7 +748,8 @@ $$
 - “用递归重写排序；时间复杂度与边界条件说明。”
 - “给我可粘贴到 Jupyter 的最小示例，包含输入/输出样例。”
 - “请先给伪代码，再给 Python，可处理重复元素与空输入。”
-   若数据只覆盖第一种说法，模型会对其它表述“懵”；多样化训练能显著提升**鲁棒性与任务覆盖**。
+
+若数据只覆盖第一种说法，模型会对其它表述“懵”；多样化训练能显著提升**鲁棒性与任务覆盖**。
 
 
 #### 4）如何系统评估“有用性（Helpful）”和“无害性（Harmless）”？
@@ -742,8 +795,17 @@ $$
 
 #### 6）SFT 阶段，模型为何能学会预训练没见过的特殊 token（如 `<|user|>`）？
 
-- 这些 token 的**词向量会在 SFT 时被随机初始化**并参与前向；虽然**不在监督端（无直接 CE）**，但它们出现在 **输入序列**里，**通过注意力**影响对下一个输出 token 的预测，因此**会收到梯度反传**（来自 assistant tokens 的损失）。
+- 这些 token 的**词向量会在 SFT 时被随机初始化**并参与前向；虽然**不在监督端（无直接 CE）**，但它们出现在**输入序列**里，**通过注意力**影响对下一个输出 token 的预测，因此**会收到梯度反传**（来自 assistant tokens 的损失）。
+
 - 直观上：模型为了“预测正确的下一 token”，需要区分“谁在说话/段落边界/指令位置”，于是把 `<|user|>`、`<|assistant|>` 等学习成**语义分隔/角色提示**的向量。
+
+- 根据链式法则（Chain Rule）：
+
+  $$\frac{\partial Loss}{\partial \text{Emb}_{instr}} = \frac{\partial Loss}{\partial \text{Logits}_{resp}} \cdot \frac{\partial \text{Logits}_{resp}}{\partial h_{resp}} \cdot \underbrace{\frac{\partial h_{resp}}{\partial h_{instr}}}_{\text{Attention连接}} \cdot \frac{\partial h_{instr}}{\partial \text{Emb}_{instr}}$$
+
+  - 虽然 $\frac{\partial Loss}{\partial \text{Logits}_{instr}}$ 是 0（因为我们 Mask 掉了 Instruction 的直接 Loss），但是Loss 是在 Response 处产生的。
+  - 梯度会从 **Response** 沿着 **Attention 权重矩阵** “流回” 到 **Instruction** 的 hidden states。
+  - 最终，梯度会一直流到底层的 **Embedding Layer**，导致 Instruction 对应的 token embedding 数值发生微小的更新。
 
 
 #### 7）为什么训练时通常只对 **Answer** 计损失、忽略 **Instruction**？

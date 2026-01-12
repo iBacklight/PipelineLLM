@@ -270,3 +270,9 @@ Tokenizer实际上是一种把文本转换为token的工具或者算法。它的
 | BPE / BBPE | 合并 (自底向上) | 频率 (谁出现多合并谁)           | GPT, Llama, DeepSeek, Qwen |
 | WordPiece  | 合并 (自底向上) | 似然值 (谁能提升预测概率合并谁) | BERT, DistilBERT           |
 | Unigram    | 剪枝 (自顶向下) | Loss 贡献度 (谁没用就删谁)      | T5, mBART                  |
+
+
+
+#### 4. Tiktokenizer
+
+Tiktoken 是 OpenAI 开源的一个高性能 BPE (Byte Pair Encoding) 分词器（Tokenizer）。

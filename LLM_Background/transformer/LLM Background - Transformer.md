@@ -1,6 +1,8 @@
 # LLM Background : Transformer 模型深度解析与代码实现
 
-**基于 PyTorch 的从零实现**
+[TOC]
+
+
 
 ## 1. 简介
 
@@ -73,26 +75,44 @@ $$
 
    代码中处理了两种 Mask：
 
-   - **Causal Mask (因果掩码/上三角掩码):** 用于 Decoder，防止模型看到未来的信息。
+   - **Causal Mask (因果掩码/上三角掩码):** 用于 Decoder，按行防止模型看到未来的信息。例如
 
-     Python
+     $$\begin{bmatrix} 
+     10.5 & \mathbf{-\infty} & \mathbf{-\infty} \\
+     9.2 & 11.0 & \mathbf{-\infty} \\
+     10.1 & 8.8 & 12.0 
+     \end{bmatrix}$$
 
      ```python
      # 创建上三角矩阵 (diagonal=1)，将上方元素设为负无穷
+     # for pos of q is i, pos of key is j, we need to mask all j > i
+     # i\j 0 1 2 3 4
+     # 0   · × × × × <-- × 对应的位置是 1 (True)，将被填入 -inf
+     # 1   · · × × ×
+     # 2   · · · × ×
+     # 3   · · · · ×
+     # 4   · · · · ·<-- · 对应的位置是 0 (False)，保留原始分数
+     # causal mask只提供一个位置索引，并非权重，所以0不受影响
+     # 只有被标记1的位置索引被处理成-inf
      causal_mask = torch.triu(torch.ones(T, T, ...), diagonal=1)
      attn = attn.masked_fill(causal_mask, float('-inf'))
      ```
 
+   - **Padding Mask**: 按列忽略输入中的 Padding Token
+
      ```python
-       * **Padding Mask:** 忽略输入中的 Padding Token。
+     if key_padding_mask is not None:  # [B,T], True=pad
+         # attn shape = [B, H, Q_T, K_T]
+         # 注意：我们只遮住Key T维度，因为Key代表被观察的对象
+         # 而 Q 即使也有padding，它计算出来的注意力向量确实也是无效的
+         kpm = key_padding_mask[:, None, None, :]  # [B,1,1,T]
+         attn = attn.masked_fill(kpm, float("-inf"))
      ```
 
 5. **Softmax 与输出:**
 
-   Python
-
    ```python
-   attn_weights = self.softmax(attn) # 归一化得到权重
+   attn_weights = self.softmax(attn) # 归一化得到权重（-inf的权重为0）
    attn = attn_weights @ v           # 权重加权求和
    ```
 
@@ -180,9 +200,7 @@ for layer in self.layers:
 
 由于 Transformer 并行处理所有 Token，无法像 RNN 那样天然捕捉顺序，因此必须注入位置信息。 代码使用了正弦/余弦位置编码：
 
-Python
-
-```
+```python
 pe[:, 0::2] = torch.sin(position * div_term) # 偶数维度 sin
 pe[:, 1::2] = torch.cos(position * div_term) # 奇数维度 cos
 ```
@@ -238,3 +256,77 @@ memory = self.encoder(src_emb, src_key_padding_mask=...)
 decoder_output = self.decoder(memory, tgt_emb, tgt_mask=True, ...)
 output = self.output_projection(decoder_output)
 ```
+
+
+
+## Appendix
+
+### 为什么要使用LayerNorm而不是BatchNorm？
+
+1. 变长序列的挑战 (Variable Sequence Length)
+
+这是 BatchNorm 在 NLP 任务中的最大痛点。
+
+- **BatchNorm 的逻辑**：它是在一个 **Batch** 内，对所有样本的**同一个位置**进行归一化。
+- **问题**：文本通常长短不一。如果 Batch 中有的句子长 100，有的长 10，那么在计算第 11 到 100 个位置的均值和方差时，样本量会剧减，导致统计量极其不稳定。
+- **LayerNorm 的逻辑**：它是在 **单个样本（句子）内部**，对该位置的**所有特征维度**进行归一化。无论句子多长，每个 Token 的归一化都是独立且稳定的，不受其他句子的长度影响。
+
+2. 语义一致性 (Feature-wise vs. Sample-wise)
+
+- **BatchNorm 的风险**：BatchNorm 强制让 Batch 内不同样本的同一位置具有相似的分布。但在语言中，不同句子的第 1 个词可能分别是“我”（代词）、“苹果”（名词）、“快速地”（副词），强行将它们的特征分布拉齐会破坏各自独立的语义表达。
+- **LayerNorm 的优势**：它保护了样本间的差异。它归一化的是单个 Token 的 Embedding 维度。这相当于在保证“这个词的特征值不要太极端”的同时，保留了句子与句子之间的独特信息。
+
+3. 训练与推理的一致性 (Consistency)
+
+- **BatchNorm 的弊端**：BatchNorm 在训练时依赖 Batch 统计量，推理时依赖全局移动平均值。这意味着推理时的行为高度依赖于训练时的 Batch Size 大小。
+- **LayerNorm 的优势**：LayerNorm 在训练和推理时的计算方式**完全一致**。它不依赖于 Batch 的大小，甚至在 Batch Size 为 1 时也能完美运行。这对于需要实时响应的大模型（推理时通常一个一个处理）至关重要。
+
+下面我们举例说明：
+
+```python
+import torch
+import torch.nn as nn
+
+# 1. 模拟数据：[Batch size=2, Seq_len=3, Embedding(d_model)=4]
+# 句子1: "我 喜欢" + <pad>
+# 句子2: "学习" + <pad> + <pad>
+x = torch.randn(2, 3, 4)
+
+# 2. Layer Normalization (LN)
+# LN 是在“特征维度”d_model上归一化。
+# 它针对的是每一个 Token 自己。
+# 计算每一个词向量 [1, 4] 的均值和方差。
+ln = nn.LayerNorm(4)
+out_ln = ln(x)
+
+# 3. Batch Normalization (BN)
+# BN 是在“批次维度”上归一化。
+# 在 NLP 中，BN 需要把维度调整为 [Batch, Feature, Seq]
+# 它针对的是 Batch 中所有句子在“同一位置”的“同一维度”。
+x_bn = x.transpose(1, 2) # 变为 [2, 4, 3]
+bn = nn.BatchNorm1d(4)
+out_bn = bn(x_bn).transpose(1, 2)
+
+# --- 逻辑演示对比 ---
+
+# 【LN 的做法】：
+# 对于第 1 句话的第 1 个词 (1, 1, :)：
+# 它只看这 4 个特征值，算出均值方差，然后归一化。
+# 结果：不受到第二句话的影响，也不受到后面 <pad> 的影响。
+
+# 【BN 的做法】：
+# 对于所有词的第 1 个特征维度 (:, :, 1)：
+# 它会把【第一句的词1、词2、词3】和【第二句的词1、词2、词3】全抓过来算均值。
+# 结果：
+# 1. 第一句话的表达被第二句话“污染”了。
+# 2. 最致命的是：<pad> 处的 0 或随机噪声被算进了均值，导致模型学到的统计特性偏移。
+```
+
+
+
+### 为什么要先 Dropout 再残差？
+
+残差连接（Residual Connection）的主要作用是提供一条恒等映射（Identity Mapping）的通路，帮助梯度能够无损地传导到深层网络。
+
+- **如果先 Dropout 再残差（标准做法）**：Dropout 只作用于当前子层（如注意力机制，或者前馈网络）新提取出来的特征（输出），而残差路径上的原始信息是完整的。这相当于：“我尝试给新学到的知识加点噪声（正则化），但我保证底层的根基（残差路径）是不动的。”
+- **如果残差后接 Dropout**：这会把整条残差路径的信息也随机丢弃。这会破坏恒等映射，使得模型每一层都面临“断路”的风险，训练会变得极度不稳定。

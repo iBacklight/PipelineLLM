@@ -347,12 +347,22 @@ class TransformerModel(nn.Module):
         self.to(self.device)
     
     def _create_positional_encoding(self, max_len, d_model):
-        """Create sinusoidal positional encoding."""
-        pe = torch.zeros(max_len, d_model, device=self.device)
-        position = torch.arange(0, max_len, dtype=torch.float, device=self.device).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2, device=self.device).float() * 
-                           -(math.log(10000.0) / d_model))
-        pe[:, 0::2] = torch.sin(position * div_term)
+        """
+        eq of the position embeddings:
+            PE(pos, 2i) = sin(pos / (10000^(2i/d_model))) = sin(pos * (10000^(-2i/d_model)))
+            PE(pos, 2i+1) = cos(pos / (10000^(2i/d_model))) = cos(pos * (10000^(-2i/d_model)))
+
+        where pos is the position of the token in the sequence, 
+        and i is the dimension of the embedding.
+        """
+        pe = torch.zeros(max_len, d_model, device=self.device) # [max_seq_len, d_model] ensure every dim in the sequence is covered
+        position = torch.arange(0, max_len, dtype=torch.float, device=self.device).unsqueeze(1) # pos = [max_seq_len, 1]， a vector
+        # calculate the frequency for each dimension
+        # use log to avoid overflow maintain the stability
+        # leverage the equation: a^b = e^(b*log(a))
+        div_term = torch.exp(torch.arange(0, d_model, step=2, dtype=torch.float, device=self.device) * 
+                           -(math.log(10000.0) / d_model)) # [d_model//2], a list
+        pe[:, 0::2] = torch.sin(position * div_term) # position * div_term = shape of [max_seq_len, d_model//2], a matrix formed by boardcast
         pe[:, 1::2] = torch.cos(position * div_term)
         return pe
     
