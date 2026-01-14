@@ -21,13 +21,17 @@ BERT 是针对于 NLU 任务打造的预训练模型，其输入一般是文本�
 #### 激活函数
 
 其激活函数： GELU 函数，全名为高斯误差线性单元激活函数，这也是自 BERT 才开始被普遍关注的激活函数。GELU 的计算方式为：
+
 $$
 \text{GELU}(x) = x \cdot \Phi(x)
 $$
+
 其中$\Phi(x)$是标准正态分布的累积分布函数 (CDF)。为了加速，Hendrycks & Gimpel (2016) 提出了一个 **tanh 近似**：
+
 $$
 \text{GELU}(x) \approx 0.5x \left( 1 + \tanh\!\Big(\sqrt{\tfrac{2}{\pi}} \cdot (x + 0.044715x^3)\Big)\right)
 $$
+
 $0.044715x^3$ 是一个修正项，让近似曲线和精确公式更贴合。传统激活函数（如 ReLU）是 **硬性截断**：小于 0 就直接丢弃，大于 0 全部保留。**GELU 引入概率思想**：
 
 - 不再“全保留或全丢弃”，而是根据输入 x 在 **高斯分布中的概率** 来决定“保留多少”。相当于把神经元的输出乘上一个 **依赖于自身的概率因子**。
@@ -286,7 +290,7 @@ $$
 
 GPT是由 OpenAI 团队于 2018年发布的预训练语言模型。在 2020年发布的 GPT-3 成就了 LLM 时代的基础，并以 GPT-3 为基座模型的 ChatGPT 成功打开新时代的大门，成为 LLM 时代的最强竞争者之一。
 
-![gpt_arch](gpt_arch.png)
+![gpt_arch](pics/gpt_arch.png)
 *Fig.2 GPT 系列架构图解, 图片截取自 [HappyLLM](https://github.com/datawhalechina/happy-llm/blob/main/docs/chapter3/%E7%AC%AC%E4%B8%89%E7%AB%A0%20%E9%A2%84%E8%AE%AD%E7%BB%83%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B.md)*
 
 #### 模型架构——Decoder Only
@@ -372,7 +376,7 @@ output：今天天气很好
 
 LLaMA模型是由Meta（前Facebook）开发的一系列大型预训练语言模型。与GPT系列模型一样，LLaMA模型也是基于Decoder-Only架构的预训练语言模型。LLaMA模型的整体结构与GPT系列模型类似，只是在模型规模和预训练数据集上有所不同。
 
-![Fig 1 LLaMA 架构图解](llama_arch.png)
+![Fig 1 LLaMA 架构图解](pics/llama_arch.png)
 *Fig.2 LLaMA 架构图解, 图片截取自 [HappyLLM](https://github.com/datawhalechina/happy-llm/blob/main/docs/chapter3/%E7%AC%AC%E4%B8%89%E7%AB%A0%20%E9%A2%84%E8%AE%AD%E7%BB%83%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B.md)*
 
 LLaMA的attention的一般流程为
@@ -643,7 +647,7 @@ $$
 
 在实际计算中，采用分解计算的方法，拆分cossin以简化计算 - 保留cos/sin为正，只反转一半对应sin的向量符号，[图片来自b站RethinkFun up主讲解RoPE的视频](https://www.bilibili.com/video/BV1F1421B7iv)	。
 
-![](rope_comput.png)
+![](pics/rope_comput.png)
 
 注意：对 hidden state $h = [h_0, h_1, h_2, ..., h_{d-1}]$ ，在数学表达里，「sin 前面的符号是交错的」，因为每一对 (even, odd) 被当作一个二维向量旋转。但是在代码中，把向量 $[h_0,h_1,h_2,h_3,...]$ 重排成两个块 $[h_0,h_2,...]$ 和 $[h_1,h_3,...]$，再用 `rotate_half` 来模拟 ((h_{even}, h_{odd}) → (-h_{odd}, h_{even})` 的映射。（可以理解成并非相邻向量进行拼接组队，而是前一半和后一半）
 
@@ -764,28 +768,12 @@ Comming soon
 ------
 
 ### DeepSeek
-Comming soon
-<br>
+Please see the independent deepseek architecture docs.
 <br>
 
 
-各家开源模型对比
-| 家族                | 代次                             | 典型形态/规模                            | 主要架构点                                                                                       |
-| ----------------- | ------------------------------ | ---------------------------------- | ------------------------------------------------------------------------------------------- |
-| **Qwen**          | **Qwen1/1.5**                      | Dense                              | 早期标准解码器 + RoPE + RMSNorm；中文/多语基础。                                                           |
-|                   | **Qwen2**                      | Dense                              | 更大规模与数据配比优化；长上下文增强。                                                                         |
-|                   | **Qwen2.5**                    | Dense & MoE                        | MoE 初代成形（含 shared experts）、ABF 提升 RoPE 基频；多领域合成数据引入。                                        |
-|                   | **Qwen3（2025）**                | **Dense & MoE**（Qwen3-235B-A22B 等） | **QK-Norm**、移除 QKV-bias；**128 专家/激活 8，无 shared**；**global-batch** 均衡；**ABF+YARN+DCA** 长上下文。 |
-|                   | **Qwen3-Omni（2025/9）**         | 多模态统一                              | 单一模型覆盖文/图/音/视频，保持与同尺寸单模态持平。([arXiv][1])                                                     |
-| **DeepSeek**      | V1/V2                          | MoE + MLA                          | 在 V2 系列中确立 **MLA + DeepSeekMoE**，强调性价比与高效推理。                                                |
-|                   | V2.5                           | MoE                                | 继续在训练/对齐上打磨，铺垫 V3。                                                                          |
-|                   | **V3（2024/12→2025/2 报告）**      | **MoE 671B，总/激活 37B**              | **MLA**、**aux-loss-free** 均衡、**MTP**、FP8 训练与工程化稳定性；Node-limited routing 等部署考量。              |
-|                   | **R1（推理向）**                    | Dense/MoE（家族）                      | 强化推理能力的专向系列（用于蒸馏到 V3）。                                                                      |
-|                   | **V3.2-Exp（2025/9）**           | 稀疏注意力                              | 面向国产硬件生态（Ascend/CANN、Cambricon/Hygon），强调跨平台部署与稀疏化。([Reuters][2])                            |
-| **ChatGLM / GLM** | GLM-130B → ChatGLM（6B）         | Dense                              | 基于 GLM 预训练范式（生成 + 填空）演进，国产中文/英双语对齐。                                                         |
-|                   | ChatGLM2/3                     | Dense                              | 长上下文增强、工具链与对齐升级。                                                                            |
-|                   | **GLM-4（2024/06 报告）**          | Dense（9B/32B…）                     | 解码器 Transformer；**All Tools**（函数调用/浏览器/代码执行）、长上下文；**GLM-4-Air** 追求低时延。                      |
-|                   | **GLM-4.1V-Thinking（2025/07）** | VLM 9B                             | 视觉-语言 “Thinking” 训练框架，**RLCS** 增强多模态推理泛化。([arXiv][3])                                       |
+
+## Reference
 
 [1]: https://arxiv.org/html/2509.17765v1 "Qwen3-Omni Technical Report"
 [2]: https://www.reuters.com/technology/deepseek-releases-model-it-calls-intermediate-step-towards-next-generation-2025-09-29 "China's DeepSeek releases 'intermediate' AI model on route to next generation"

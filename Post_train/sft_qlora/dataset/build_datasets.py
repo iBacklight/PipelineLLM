@@ -105,7 +105,7 @@ def dedup(ds: Dataset) -> Dataset:
     # Use filter to remove duplicates
     seen_hashes = set()
     def _filter_duplicates(ex):
-        h = ex["_h"]
+        h = ex["_h"] # hash of the example
         if h in seen_hashes:
             return False
         seen_hashes.add(h)

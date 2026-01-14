@@ -101,7 +101,7 @@ $$\text{Size} = 2 \times 2 \times n_{layers} \times d_{model} \times \text{Conte
 
 ### 1.5 解决方法：GQA （Grouped-Query Attention）
 
-![GQA](GQA.png)
+![GQA](pics/GQA.png)
 
 *Fig 1 MHA/MQA/GQA, 图片来自[视频](https://www.bilibili.com/video/BV1BYXRYWEMj/?spm_id_from=333.337.search-card.all.click&vd_source=8e4240c01961f6b9da120f45fca69100)*
 
@@ -109,13 +109,13 @@ $$\text{Size} = 2 \times 2 \times n_{layers} \times d_{model} \times \text{Conte
 
 ### 2. MLA 的解决方案：低秩键值联合压缩
 
-![MLA](MLA.png)
+![MLA](pics/MLA.png)
 
 *Fig.2 DeepSeek MLA and MoE, 来自原Deepseek V2论文*
 
 MLA 的核心思想是**“压缩”**。它不再缓存完整的 Key 和 Value 矩阵，而是将 KV 投影到一个低维的潜在向量（Latent Vector）中。
 
-![MLA](MLA_detail.png)
+![MLA](pics/MLA_detail.png)
 
 - Low-Rank Key-Value Joint Compression (低秩KV联合压缩):
 
@@ -305,7 +305,7 @@ DeepSeek V3 彻底去掉了 Aux Loss。
 
 DSA 不再计算所有 Key-Value 的注意力，而是通过两步走来实现稀疏化：
 
-![lighting](flash_attn.png)
+![lighting](pics/flash_attn.png)
 
 - **Lightning Indexer (闪电索引器)**：这是一个轻量级的模块（FP8实现），用于快速计算 Query 和 Key 之间的粗略相关性分数 $I_{t,s}$ 。（复杂度,$O(L^2)$, L=seq_len）
   $$
@@ -586,7 +586,7 @@ $$Score_{total} = (q_{absorbed} \cdot c_{KV}^T) + (\text{RoPE}(q^R) \cdot \text{
 
 在原论文中，实际计算为
 
-![mla_decouple_rope](mla_decouple_rope.png)
+![mla_decouple_rope](pics/mla_decouple_rope.png)
 
 
 
