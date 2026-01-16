@@ -11,6 +11,7 @@
 ### 1.1 打分器视角（Discriminative View）：最大化得分差
 
 这是最直观的操作视角。我们训练一个打分函数（姑且叫做 Reward Model）$s_\theta(x, y)$，目标是让好结果的得分显著高于差结果。为了实现这一点，我们使用 *Pairwise Loss* 最小化排序错误的风险：
+
 $$
 \mathcal L = -\log \sigma\big(s_\theta(x,y^+) - s_\theta(x,y^-)\big)
 $$
@@ -23,32 +24,30 @@ $$
 ### 1.2 选择概率视角（Probabilistic View）：潜变量与噪声假设
 
 这是上述损失函数的理论来源。假设，我们在做选择时遵循一个带有噪声的“效用模型”（Utility Model）：
+
 $$
 \text{Utility}(x, y) = s_\theta(x, y) + \epsilon
 $$
 
-
 其中 $s_\theta$ 是可观测的得分，$\epsilon$​ 是不可观测的随机噪声。在我们训练模型的过程中，肯定倾向于让模型选择效用更高的那个选项。而此时，对于两个选项A和B，**“A 比 B 好”的概率，本质上就是“A 的效用 > B 的效用”的概率**：
+
 $$
 \Pr(y^+ \succ y^-) = \Pr\big(\text{Utility}(y^+) > \text{Utility}(y^-)\big)
 $$
 
-
 将效用公式代入并移项整理，我们得到核心等式：
+
 $$
 \Pr(y^+ \succ y^-) = \Pr(\underbrace{\epsilon^- - \epsilon^+}_{\text{噪声差}} < \underbrace{s(y^+) - s(y^-)}_{\text{得分差}})
 $$
 
+那么，成对概率模型 $\Pr(y^+ \succ y^-)$ 到底等于什么？这取决于我们假设**噪声 $\epsilon$ 服从什么分布**：
 
-那么，成对概率模型$\Pr(y^+ \succ y^-)$ 到底等于什么？这取决于我们假设**噪声 $\epsilon$ 服从什么分布**：
+- **Bradley-Terry 模型**（主流）：如果我们假设噪声 $\epsilon$ 服从 Gumbel 分布（极值分布），那么两个 Gumbel 变量之差就服从 Logistic 分布。此时，偏好概率恰好推导为 Sigmoid 形式, 这就是为什么我们在 RLHF 中普遍使用 Log-Sigmoid 损失的原因：
 
-- **Bradley-Terry 模型**（主流）：如果我们假设噪声 $\epsilon$ 服从 Gumbel 分布（极值分布），那么两个 Gumbel 变量之差就服从 Logistic 分布。此时，偏好概率恰好推导为 Sigmoid 形式：
-  $$
+$$
   \Pr(y^+ \succ y^-) = \frac{1}{1 + e^{-(s(y^+) - s(y^-))}} = \sigma(\Delta s)
-  $$
-  
-
-  这就是为什么我们在 RLHF 中普遍使用 Log-Sigmoid 损失的原因。
+$$
 
 - **Thurstone-Mosteller** 模型：如果我们假设噪声 $\epsilon$ 服从 高斯分布（正态分布），那么偏好概率将由标准正态分布的累积分布函数（CDF, 即 Probit）给出。
 
@@ -61,10 +60,6 @@ $$
 $$
 \log \pi_\theta(y^+|x) - \log \pi_\theta(y^-|x) \uparrow
 $$
-
-​        
-
- 	这就是 DPO 的核心推动力。这种方法原来也被推荐系统引用。
 
 ---
 
@@ -84,8 +79,9 @@ $$
 在模型的对齐（Alignment, 就是让模型输出更加符合我们的偏好）训练里，我们之前提到，我们常有“成对偏好”数据参与训练：同一输入 $x$ 下，有两段回答 $y^+$（更好）和 $y^-$（更差）。它的**目标**是：让策略 $\pi_\theta$ 更倾向产生 $y^+$ 而不是 $y^-$，且又不要**偏离参考策略**（通常是SFT模型）太远。传统 RLHF的做法是，先训奖励模型（RM）拟合偏好， 再用 PPO 等 RL 方法来优化策略 + KL 正则防止参数太过偏离参考模型。
 
 **DPO**（Direct Preference Optimization）则跳过显式 RM 的训练，直接把偏好约束写成一个**监督式！目标**来优化策略，训练更稳定、便宜（相对于PPO这一类的算法来说）、易落地。换个说法就是，DPO 参考了训练RM的范式，通过数学变换把“**奖励差**”用**参考策略的对数几率差**替代，得到一个对**偏好对**的**二元逻辑回归**损失。于是我们无需显式的RM，可以直接对策略做***pairwise***监督优化。针对一个样本对 $(x, y^+, y^-)$，DPO 的 loss 常写作：
+
 $$
-\mathcal{L}_{\text{DPO}}(\theta) = -\log \sigma\!\big(
+\mathcal{L}_{\text{DPO}}(\theta) = -\log \sigma \big(
 \beta\,[\,\underbrace{\log \pi_\theta(y^+|x)-\log \pi_\theta(y^-|x)}_{\text{策略对数几率差}}
 -\underbrace{\log \pi_{\text{ref}}(y^+|x)+\log \pi_{\text{ref}}(y^-|x)}_{\text{参考校正/隐式KL}}]\big).
 $$
@@ -109,25 +105,22 @@ $$
 #### 3.2.1 前置概念：KL散度
 
 **KL 散度（Kullback–Leibler divergence）** 用来衡量两个分布 $p,q$ 的差异：
+
 $$
 D_{\mathrm{KL}}(p\Vert q)=\sum_{y} p(y)\,\log\frac{p(y)}{q(y)} \quad(\text{或 } \mathbb{E}_{y\sim p}[\log p(y)-\log q(y)])
 $$
 
-
-
 他表示 $p$ 分布对于 $q$ 分布的相似程度:
 
 - $D_{\mathrm{KL}}\ge 0$（根据 Jensen 不等式），且当且仅当 $p=q$ 时为 0， 越接近0，表明他们越相似。
-- 它是**有方向的**，不对称的，即：$D_{\mathrm{KL}}(p\|q)\neq D_{\mathrm{KL}}(q\|p)$。
+- 它是**有方向的**，不对称的，即： $D_{\mathrm{KL}}(p\|q)\neq D_{\mathrm{KL}}(q\|p)$ 。
 - KL 常用来把模型**“拽回去”**：不让新策略 $\pi$ 偏离 “参考策略” $\pi_{\text{ref}}$ 太远（比如 SFT 模型），避免输出风格差异太大。
 
 在RLHF（下一节开始介绍）中，KL散度常被用于正则化策略上。例如，在每个输入 $x$ 上，我们希望策略 $\pi(\cdot|x)$ **既能拿到高“奖励” $r(x,y)$，又别离参考 $\pi_{\text{ref}}(\cdot|x)$ 太远**。一个经典的一步式目标是（类似PPO-KL范式）：
 
 $$
-\max_{\pi(\cdot|x)}\;\; \mathbb{E}_{y\sim \pi(\cdot|x)}[\,r(x,y)\,]\;-\;\beta\;D_{\mathrm{KL}}\!\left(\pi(\cdot|x)\,\big\Vert\,\pi_{\text{ref}}(\cdot|x)\right) = \min_{\pi(\cdot|x)}\;\; \beta\;D_{\mathrm{KL}}\!\left(\pi(\cdot|x)\,\big\Vert\,\pi_{\text{ref}}(\cdot|x)-\mathbb{E}_{y\sim \pi(\cdot|x)}[\,r(x,y)\,]\;\;)\right.
-\tag{1}
+\max_{\pi(\cdot|x)} \mathbb{E}_{y\sim \pi(\cdot|x)}[r(x,y)] - \beta D_{\mathrm{KL}}\left(\pi(\cdot|x) \,\|\, \pi_{\text{ref}}(\cdot|x)\right) = \min_{\pi(\cdot|x)} \beta D_{\mathrm{KL}}\left(\pi(\cdot|x) \,\|\, \pi_{\text{ref}}(\cdot|x) \cdot e^{\frac{1}{\beta}r(x,y)}\right)（1）
 $$
-
 
 
 >DPO 论文中写道 [3]： During the RL phase, the learned reward function is used to provide feedback to the language model. Following prior works [17, 18], the optimization is formulated as (1)
@@ -135,9 +128,7 @@ $$
 这里 $\beta>0$ 的作用与之前介绍的 DPO loss 中的温度系数作用一致。最后，对于LLM中使用KL散度使训练模型不偏离参考模型，我们直接给出公式。对给定的 $x$，
 
 $$
-D_{\mathrm{KL}}\!\big(\pi(\cdot|x)\,\|\,\pi_{\rm ref}(\cdot|x)\big)
-=\mathbb{E}_{y\sim \pi(\cdot|x)}
-\left[\log \frac{\pi(y|x)}{\pi_{\rm ref}(y|x)}\right].
+D_{\mathrm{KL}}\big(\pi(\cdot|x)\,\|\,\pi_{\rm ref}(\cdot|x)\big) =\mathbb{E}_{y\sim \pi(\cdot|x)}\left[\log \frac{\pi(y|x)}{\pi_{\rm ref}(y|x)}\right].
 $$
 
 #### 3.3.2 前置概念：BT偏好数据模型
@@ -145,7 +136,7 @@ $$
 然而在现实里，我们很难有显式且直观的奖励分数 $r(x,y)$ （所谓文无第一，武无第二？），但确实有对于某个输入回应的**偏好对数据** $(x,y^+,y^-)$，即对同一 $x$，我们认为“$y^+$ 胜过 $y^-$”。这时候可以使用一个我们之前提到过的模型——***Bradley–Terry Model*** [1]，该公式在 DPO 原文有详细讲解 [3]:
 
 $$
-\Pr(y^+ \succ y^- \mid x)\;=\;\sigma\!\big(r(x,y^+)-r(x,y^-)\big),
+\Pr(y^+ \succ y^- \mid x)=\sigma \big(r(x,y^+)-r(x,y^-)\big),
 $$
 
 这是说，我们规定：
@@ -159,6 +150,7 @@ $$
 1. 最大似然目标 (MLE Objective)
 
 ​	我们的目标是最大化观测数据的似然概率。给定数据集中的偏好对 $(x, y^+, y^-)$，我们希望参数 $\theta$ 能够最大化“$y^+$ 胜过 $y^-$”这一事件发生的概率。基于 Bradley-Terry 模型假设，该目标函数为：
+
 $$
 \max_\theta \mathbb{E}_{(x, y^+, y^-) \sim \mathcal{D}} \Big[ \log \Pr_\theta(y^+ \succ y^- \mid x) \Big] = \max_\theta \mathbb{E} \Big[ \log \sigma\big(r_\theta(x,y^+) - r_\theta(x,y^-)\big) \Big]
 $$
@@ -167,6 +159,7 @@ $$
 2. 负对数似然损失 (NLL Loss)
 
 ​	在优化过程中，我们将“最大化对数似然”转化为“最小化负对数似然（Negative Log-Likelihood）”。这直接导出了标准的 Pairwise Ranking Loss：
+
 $$
 \mathcal{L}(\theta) = -\log \sigma\big(r_\theta(x,y^+) - r_\theta(x,y^-)\big)
 $$
@@ -181,12 +174,14 @@ $$
 - **标签**：真实观测结果 $y_{\text{label}} = 1$（即 $y^+$ 确实赢了）。
 
 ​	回顾通用的 BCE 公式：
+
 $$
 \mathcal{L}_{\text{BCE}}(y, p) = -\big[ y \cdot \log p + (1-y) \cdot \log(1-p) \big]
 $$
 
 
 当我们将标签 $y_{\text{label}} = 1$ 代入时，右边的项 $(1-1)$ 消失，公式坍缩为：
+
 $$
 \mathcal{L}_{\text{BCE}}(1, \hat{p}) = -1 \cdot \log \hat{p} = -\log \sigma(\Delta r)
 $$
@@ -197,45 +192,43 @@ $$
 我们接下来正式进行推导。从原文中看，作者从强化学习微调阶段的目标函数（1）式中，分析得出在 KL 约束条件下，最大化奖励的**最优策略形状**（对每个固定的 $x$）：
 
 $$
-\pi_\tau(y\mid x)=\frac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\Big(\tfrac{1}{\beta} \, r(x,y)\Big),
-\tag{2}
+\pi_\tau(y\mid x)=\frac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp \Big(\tfrac{1}{\beta} \, r(x,y)\Big), （2）
 $$
 
 其中 $Z(x)=\sum_y \pi_{\text{ref}}(y\mid x)\exp(\tfrac{1}{\beta}r(x,y))$ 是配分函数(partition function)， 该项只随 $x$ 变，不随 $y$ 变，是归一化函数。为了让乘法变成加法，使得容易做**差分**消去配分函数同时更加稳定，两边取对数并移项，得到：
-$$
-r(x,y) = \beta \log \frac{\pi_\tau(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x).
-\tag{3}
-$$
-注意 $\log Z(x)$ **只依赖于 $x$**，与 $y$​ 无关。然后，Bradley–Terry（BT）假设对同一 $x$ 的两段输出 $y_1,y_2$：
-$$
-p^*(y_1 \succ y_2 \mid x) \;=\; \sigma\!\big(r^*(x,y_1) - r^*(x,y_2)\big).
-\tag{4}
-$$
-
-
-
-把 (3) 代入到“奖励差”里（$r^*$ 用最优策略 $\pi^*$ 的表达），$\beta\log Z(x)$ 在做差时**抵消**，得到（由此可知配分函数被消除后对梯度也没有影响）：
-$$
-p^*(y_1 \succ y_2 \mid x) = \sigma\!\Big(
-\beta \log \frac{\pi^*(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}
--\beta \log \frac{\pi^*(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}
-\Big).
-\tag{5}
-$$
-
-把 $\sigma(z)=1/(1+e^{-z})$ 展开，就得到原文等价写法：
 
 $$
-p^*(y_1 \succ y_2 \mid x)=
-\frac{1}{1+\exp\!\Big(\beta \log \frac{\pi^*(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}
--\beta \log \frac{\pi^*(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\Big)}.
-\tag{6}
+r(x,y) = \beta \log \frac{\pi_\tau(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x).（3）
+$$
+
+注意 $\log Z(x)$ **只依赖于 $x$**，与 $y$​ 无关。然后，Bradley–Terry（BT）假设对同一 $x$ 的两段输出 $y_1,y_2$，：
+
+$$
+r(x,y) = \beta \log \frac{\pi_{\tau}(y \mid x)}{\pi_{\text{ref}}(y \mid x)} + \beta \log Z(x). \qquad (3)
+$$
+
+注意 $\log Z(x)$ **只依赖于 $x$**，与 $y$ 无关。然后，Bradley-Terry (BT) 假设对同一 $x$ 的两段输出 $y_1, y_2$：
+
+$$
+p^{*}(y_1 \succ y_2 \mid x) = \sigma \Big(r^{*}(x,y_1) - r^{*}(x,y_2)\Big). \qquad (4)
+$$
+
+把 (3) 代入到“奖励差” ($r^{*}$ 用最优策略 $\pi^{*}$ 的表达)，$\beta \log Z(x)$ 在做差时抵消，得到（由此可知配分函数被消除后对梯度也没有影响）：
+
+$$
+p^{*}(y_1 \succ y_2 \mid x) = \sigma \Bigg( \beta \log \frac{\pi^{*}(y_1 \mid x)}{\pi_{\text{ref}}(y_1 \mid x)} - \beta \log \frac{\pi^{*}(y_2 \mid x)}{\pi_{\text{ref}}(y_2 \mid x)} \Bigg)
+$$
+
+把 $\sigma(z) = 1 / (1 + e^{-z})$ 展开，就得到原文等价写法：
+
+$$
+p^{*}(y_1 \succ y_2 \mid x) = \frac{1}{1 + \exp \Big( \beta \log \frac{\pi^{*}(y_2 \mid x)}{\pi_{\text{ref}}(y_2 \mid x)} - \beta \log \frac{\pi^{*}(y_1 \mid x)}{\pi_{\text{ref}}(y_1 \mid x)} \Big)}
 $$
 
 用 $\pi_\theta$ 近似 $\pi^*$，提取$\beta$，再对每个偏好对 $(x,y_w,y_l)$ 的“标签=1（$y_w$ 赢）”做伯努利极大似然：
 
 $$
-\max_\theta\;\;\log\sigma\!\Big(\beta\big[\underbrace{\log\tfrac{\pi_\theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)}
+\max_\theta\log\sigma \Big(\beta\big[\underbrace{\log\tfrac{\pi_\theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)}
 -\log\tfrac{\pi_\theta(y_l|x)}{\pi_{\text{ref}}(y_l|x)}}_{\text{边际}}\big]\Big).
 $$
 
@@ -244,7 +237,7 @@ $$
 $$
 \mathcal L_{\text{DPO}}(\theta;\pi_{\text{ref}})
 = -\,
-\Big[\log \sigma\!\Big(
+\Big[\log \sigma \Big(
 \beta \big(\underbrace{\log \pi_\theta(y_w\mid x)-\log \pi_\theta(y_l\mid x)}_{\text{策略对数几率差}}
 -\underbrace{\log \pi_{\text{ref}}(y_w\mid x)+\log \pi_{\text{ref}}(y_l\mid x)}_{\text{参考校正}}\big)
 \Big)\Big].
@@ -595,8 +588,8 @@ $$
 
 $$
 \begin{aligned}
-w_A - w_B &\approx \text{logit}(0.7) = \ln\!\frac{0.7}{0.3} = \ln\!\frac{7}{3} \approx 0.8473 \\
-w_A - w_C &\approx \text{logit}(0.6) = \ln\!\frac{0.6}{0.4} = \ln(1.5) \approx 0.4055
+w_A - w_B &\approx \text{logit}(0.7) = \ln \frac{0.7}{0.3} = \ln \frac{7}{3} \approx 0.8473 \\
+w_A - w_C &\approx \text{logit}(0.6) = \ln \frac{0.6}{0.4} = \ln(1.5) \approx 0.4055
 \end{aligned}
 $$
 
