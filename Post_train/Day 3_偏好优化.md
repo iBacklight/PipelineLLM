@@ -6,124 +6,143 @@
 
 ## 1. 偏好学习到底在学什么？
 
-**任务**：给定相同输入 $x$ 的两段候选输出 $y^+$（更好）与 $y^-$（更差），学一个打分器或策略，让模型更倾向于产出 $y^+$。
+给定输入 $x$ 和一对输出 $(y^+, y^-)$，其中 $y^+$ 优于 $y^-$。偏好学习的目标是微调策略，使其生成的分布更符合这种人工合成的偏好排序。我们可以从两个等价的数学视角来理解这一过程 [1] [2]：
 
-### 两种等价视角[1] [2]：
+### 1.1 打分器视角（Discriminative View）：最大化得分差
 
-1. **打分器视角（score-based）**
-    学一个 $s_\theta(x,y)$，压低损失
-
+这是最直观的操作视角。我们训练一个打分函数（姑且叫做 Reward Model）$s_\theta(x, y)$，目标是让好结果的得分显著高于差结果。为了实现这一点，我们使用 *Pairwise Loss* 最小化排序错误的风险：
 $$
-\mathcal L = -\log \sigma\!\big(s_\theta(x,y^+) - s_\theta(x,y^-)\big),
+\mathcal L = -\log \sigma\big(s_\theta(x,y^+) - s_\theta(x,y^-)\big)
 $$
 
-这里的 $\sigma$ 指的是 **sigmoid 逻辑函数**。数学形式是：
+
+其中 $\sigma(z) = \frac{1}{1 + e^{-z}}$ 是 Sigmoid 函数。
+
+- 直观看来，这实际上是在做一个二分类任务。模型试图最大化 $y^+$ 和 $y^-$ 之间的Margin，使得 $s(y^+) - s(y^-)$ 越大越好。
+
+### 1.2 选择概率视角（Probabilistic View）：潜变量与噪声假设
+
+这是上述损失函数的理论来源。假设，我们在做选择时遵循一个带有噪声的“效用模型”（Utility Model）：
 $$
-\sigma(z) = \frac{1}{1 + e^{-z}}
+\text{Utility}(x, y) = s_\theta(x, y) + \epsilon
 $$
-意思就是“让优的比分差更大”。这就是经典的**对数几率（logistic）pairwise loss**。
 
-2. **选择概率视角（choice-probability）**
-    假设“效用”=可观测得分+噪声，$\Pr(y^+ \succ y^-)=\sigma\big(s_\theta(x,y^+)-s_\theta(x,y^-)\big)$。
 
-- 噪声若服从**Gumbel**：得到 **Bradley–Terry ** 家族；
-- 噪声若服从**高斯**：得到 **Thurstone–Mosteller**（probit）模型。
+其中 $s_\theta$ 是可观测的得分，$\epsilon$​ 是不可观测的随机噪声。在我们训练模型的过程中，肯定倾向于让模型选择效用更高的那个选项。而此时，对于两个选项A和B，**“A 比 B 好”的概率，本质上就是“A 的效用 > B 的效用”的概率**：
+$$
+\Pr(y^+ \succ y^-) = \Pr\big(\text{Utility}(y^+) > \text{Utility}(y^-)\big)
+$$
 
-> 小结：两种视角最后都落在“**学一个能把好样本的分数拉高于差样本**”的目标上。
 
-### 两个直观的例子
+将效用公式代入并移项整理，我们得到核心等式：
+$$
+\Pr(y^+ \succ y^-) = \Pr(\underbrace{\epsilon^- - \epsilon^+}_{\text{噪声差}} < \underbrace{s(y^+) - s(y^-)}_{\text{得分差}})
+$$
 
-1. **例子 A：电影推荐（非 LLM）**
-    输入 $x$=用户画像，候选 $y^+$=《星际穿越》，$y^-$=《电影B》。当前打分 $s(y^+)=2.0, s(y^-)=1.2$，那么
-    $\Pr(y^+\succ y^-)=\sigma(0.8)\approx 0.69$。训练就让这个概率更接近 1：要么拉高 $s(y^+)$，要么压低 $s(y^-)$，或两者都来点。
 
-2. **例子 B：LLM 回答偏好**
-   输入 $x$=“请给一个能直接运行的 Python 例子并解释复杂度”。 $y^+$=结构清晰、可运行、解释到位；$y^-$=解释含糊、代码跑不通。我们希望策略 $\pi_\theta$生成 $y^+$ 的对数几率更大, 即：
+那么，成对概率模型$\Pr(y^+ \succ y^-)$ 到底等于什么？这取决于我们假设**噪声 $\epsilon$ 服从什么分布**：
+
+- **Bradley-Terry 模型**（主流）：如果我们假设噪声 $\epsilon$ 服从 Gumbel 分布（极值分布），那么两个 Gumbel 变量之差就服从 Logistic 分布。此时，偏好概率恰好推导为 Sigmoid 形式：
+  $$
+  \Pr(y^+ \succ y^-) = \frac{1}{1 + e^{-(s(y^+) - s(y^-))}} = \sigma(\Delta s)
+  $$
+  
+
+  这就是为什么我们在 RLHF 中普遍使用 Log-Sigmoid 损失的原因。
+
+- **Thurstone-Mosteller** 模型：如果我们假设噪声 $\epsilon$ 服从 高斯分布（正态分布），那么偏好概率将由标准正态分布的累积分布函数（CDF, 即 Probit）给出。
+
+我们再来看两个直观的例子：
+
+1. **例子 A：电影推荐（非 LLM）**：输入 $x$=用户画像，候选 $y^+$=《星际穿越》，$y^-$=《电影B》（免责声明）。当前打分 $s(y^+)=2.0, s(y^-)=1.2$，那么
+    $\Pr(y^+\succ y^-)=\sigma(0.8)\approx 0.69$。训练就让这个概率更接近 1：要么拉高 $s(y^+)$，要么压低 $s(y^-)$，或做到两者同时。
+2. **例子 B：LLM 回答偏好**： 输入 $x$=“请给一个能直接运行的 Python 例子并解释复杂度”。 $y^+$=结构清晰、可运行、解释到位；$y^-$=解释含糊、代码跑不通。我们希望策略 $\pi_\theta$生成 $y^+$ 的对数几率更大, 即：
 
 $$
 \log \pi_\theta(y^+|x) - \log \pi_\theta(y^-|x) \uparrow
 $$
 
-​        这就是 DPO 的核心推动力，常常被用于推荐系统上。
+​        
+
+ 	这就是 DPO 的核心推动力。这种方法原来也被推荐系统引用。
 
 ---
 
 ## 2. 针对于LLM 的偏好和对齐方法
 
-- **RM（Reward Model）pairwise 训练**：用 BT logistic 拟合“$y^+$ 优于 $y^-$”；再用 PPO 等 RL 优化策略。
-- **DPO / IPO / ORPO / KTO（偏好到监督）**：绕开显式 RM，直接用 pairwise 偏好更新策略分布；
+- **RM（Reward Model）pairwise 训练**：这种主要用于声称曾RLHF使用的Reward Model[7],即 BT logistic 拟合“$y^+$ 优于 $y^-$”再利用该训练的RM进行PPO等强化学习的训练。
+- **DPO / IPO / ORPO / KTO（偏好到监督）**：绕开显式 RM 训练，直接用 pairwise 偏好更新模型的策略分布；
   - **DPO**：最常用，稳定、实现简单；
-  - **IPO/KTO/ORPO**：对损失形式、鲁棒性、噪声建模做不同取舍。
-- **GRPO/GSPO（组内相对）**：同一 prompt 多样本内部做“相对”加权，介于 pairwise 与 RL 之间（Day 4）。
+  - **IPO/KTO/ORPO**：对损失形式、鲁棒性、噪声建模等做不同的取舍。
 
 ---
 
-## 3. 直接偏好优化（DPO）
+## 3. 【重点】直接偏好优化（DPO）
 
 ### 3.1 DPO简介
 
-在对齐里，我们常有“成对偏好”数据：同一输入 $x$ 下，两段回答 $y^+$（更好）和 $y^-$（更差）。
+在模型的对齐（Alignment, 就是让模型输出更加符合我们的偏好）训练里，我们之前提到，我们常有“成对偏好”数据参与训练：同一输入 $x$ 下，有两段回答 $y^+$（更好）和 $y^-$（更差）。它的**目标**是：让策略 $\pi_\theta$ 更倾向产生 $y^+$ 而不是 $y^-$，且又不要**偏离参考策略**（通常是SFT模型）太远。传统 RLHF的做法是，先训奖励模型（RM）拟合偏好， 再用 PPO 等 RL 方法来优化策略 + KL 正则防止参数太过偏离参考模型。
 
-- **目标**：让策略 $\pi_\theta$ 更倾向产生 $y^+$ 而不是 $y^-$，且又不要**偏离参考策略**（通常是SFT模型）太远。
-
-传统 RLHF的做法是，先训奖励模型（RM）拟合偏好， 再用 PPO 等 RL 优化策略 + KL 正则。
-
-**DPO**（Direct Preference Optimization）则跳过显式 RM，直接把偏好约束写成一个**监督式目标**来优化策略，训练稳定、便宜、易落地。换个说法，DPO是 从“最大化奖励–KL”的RL目标出发，通过数学变换把“**奖励差**”用**参考策略的对数几率差**替代，得到一个对**偏好对**的**二元逻辑回归**损失。于是我们无需显式的RM，可以直接对策略做**pairwise**监督优化。对一个样本 $(x, y^+, y^-)$，DPO 的 loss 常写作：
-
+**DPO**（Direct Preference Optimization）则跳过显式 RM 的训练，直接把偏好约束写成一个**监督式！目标**来优化策略，训练更稳定、便宜（相对于PPO这一类的算法来说）、易落地。换个说法就是，DPO 参考了训练RM的范式，通过数学变换把“**奖励差**”用**参考策略的对数几率差**替代，得到一个对**偏好对**的**二元逻辑回归**损失。于是我们无需显式的RM，可以直接对策略做***pairwise***监督优化。针对一个样本对 $(x, y^+, y^-)$，DPO 的 loss 常写作：
 $$
 \mathcal{L}_{\text{DPO}}(\theta) = -\log \sigma\!\big(
 \beta\,[\,\underbrace{\log \pi_\theta(y^+|x)-\log \pi_\theta(y^-|x)}_{\text{策略对数几率差}}
 -\underbrace{\log \pi_{\text{ref}}(y^+|x)+\log \pi_{\text{ref}}(y^-|x)}_{\text{参考校正/隐式KL}}]\big).
 $$
 
-- $\sigma(\cdot)$ 是 sigmoid，把实数映射为“$y^+$ 胜出”的概率。
-- $\pi_{\text{ref}}$：参考策略（通常是 Day 2 的 SFT 模型，**冻结**）。
-- $\beta>0$：**KL 控制力度**的温度系数。大一点→更守旧（更贴近参考、不易啰嗦），小一点→更敢变化。
+- $\sigma(\cdot)$ 是 sigmoid 函数，把实数映射为“$y^+$ 胜出”的概率。
+- $\pi_{\text{ref}}$：参考策略（通常是 Day 2 的 SFT 模型，**冻结不参与训练**）。
+- $\beta>0$：**KL 散度**的温度系数。虽然DPO里没有RM，但是这个温控系数其实起到了一定控制隐式RM的作用（我们之前也说过，DPO是借鉴了RM的训练范式的）。具体来说：
+  - **$\beta$ 大**：强约束 $\to$ 模型紧贴 SFT 分布 $\to$ 抑制 Reward Hacking（如啰嗦、奇怪的格式）。
+  - **$\beta$ 小**：弱约束 $\to$ 模型追求高 Reward （高偏好）$\to$ 模型可能会钻漏洞（可能导致模式坍塌、输出单调和极化、或利用 RM 漏洞）。
+
 
 直观理解：
 
 - 如果策略对 $y^+$ 的对数概率远高于 $y^-$（且不偏离参考太多），loss 会很小；
 - 若策略对 $y^-$ 更“偏爱”，或相对参考偏差过大，loss 会增大，推动更新。
 
-说白了，**DPO就是一个把模型对齐偏好的过程，就是一个对齐（Alignment）的方法。注意：DPO的过程不是在自回归采样，而是输入response（target）进行“评分（teacher forcing）”**。
 
-### 3.2 DPO 深度理解加公式推导
+
+### 3.2 DPO 深度理解，以及公式推导
 
 #### 3.2.1 前置概念：KL散度
 
-**KL 散度（Kullback–Leibler divergence**衡量两个分布 $p,q$ 的差异：
-
+**KL 散度（Kullback–Leibler divergence）** 用来衡量两个分布 $p,q$ 的差异：
 $$
 D_{\mathrm{KL}}(p\Vert q)=\sum_{y} p(y)\,\log\frac{p(y)}{q(y)} \quad(\text{或 } \mathbb{E}_{y\sim p}[\log p(y)-\log q(y)])
 $$
 
-他表示p分布对于q分布的相似程度
 
-- $D_{\mathrm{KL}}\ge 0$（Jensen不等式），且当且仅当 $p=q$ 时为 0， 越接近0，表明他们越相似。
-- 它是**有方向的**，不对称的：$D_{\mathrm{KL}}(p\|q)\neq D_{\mathrm{KL}}(q\|p)$。
-- 在对齐里，KL 常用来**“拽回去”**：不让新策略 $\pi$ 偏离“参考策略” $\pi_{\text{ref}}$ 太远（比如 SFT 模型），避免输出风格/安全性跑飞。
 
-在RLHF中（下一节），KL散度常被用于正则化策略上。例如，在每个输入 $x$ 上，我们希望策略 $\pi(\cdot|x)$ **既能拿到高“奖励” $r(x,y)$，又别离参考 $\pi_{\text{ref}}(\cdot|x)$ 太远**。一个经典的一步式目标是（类似PPO-KL范式）：
+他表示 $p$ 分布对于 $q$ 分布的相似程度:
+
+- $D_{\mathrm{KL}}\ge 0$（根据 Jensen 不等式），且当且仅当 $p=q$ 时为 0， 越接近0，表明他们越相似。
+- 它是**有方向的**，不对称的，即：$D_{\mathrm{KL}}(p\|q)\neq D_{\mathrm{KL}}(q\|p)$。
+- KL 常用来把模型**“拽回去”**：不让新策略 $\pi$ 偏离 “参考策略” $\pi_{\text{ref}}$ 太远（比如 SFT 模型），避免输出风格差异太大。
+
+在RLHF（下一节开始介绍）中，KL散度常被用于正则化策略上。例如，在每个输入 $x$ 上，我们希望策略 $\pi(\cdot|x)$ **既能拿到高“奖励” $r(x,y)$，又别离参考 $\pi_{\text{ref}}(\cdot|x)$ 太远**。一个经典的一步式目标是（类似PPO-KL范式）：
 
 $$
-\max_{\pi(\cdot|x)}\;\; \mathbb{E}_{y\sim \pi(\cdot|x)}[\,r(x,y)\,]\;-\;\beta\;D_{\mathrm{KL}}\!\left(\pi(\cdot|x)\,\big\Vert\,\pi_{\text{ref}}(\cdot|x)\right) =\\
-\min_{\pi(\cdot|x)}\;\; \beta\;D_{\mathrm{KL}}\!\left(\pi(\cdot|x)\,\big\Vert\,\pi_{\text{ref}}(\cdot|x)-\mathbb{E}_{y\sim \pi(\cdot|x)}[\,r(x,y)\,]\;\;)\right.
+\max_{\pi(\cdot|x)}\;\; \mathbb{E}_{y\sim \pi(\cdot|x)}[\,r(x,y)\,]\;-\;\beta\;D_{\mathrm{KL}}\!\left(\pi(\cdot|x)\,\big\Vert\,\pi_{\text{ref}}(\cdot|x)\right) = \min_{\pi(\cdot|x)}\;\; \beta\;D_{\mathrm{KL}}\!\left(\pi(\cdot|x)\,\big\Vert\,\pi_{\text{ref}}(\cdot|x)-\mathbb{E}_{y\sim \pi(\cdot|x)}[\,r(x,y)\,]\;\;)\right.
 \tag{1}
 $$
 
->论文中写道 [3]： During the RL phase, the learned reward function is used to provide feedback to the language model. Following prior works [17, 18], the optimization is formulated as (1)
 
-这里 $\beta>0$ 控制“保守 vs 激进”。$\beta$​ 大：更贴近参考；小：更敢改变，远离参考。这里，对给定的 $x$，
+
+>DPO 论文中写道 [3]： During the RL phase, the learned reward function is used to provide feedback to the language model. Following prior works [17, 18], the optimization is formulated as (1)
+
+这里 $\beta>0$ 的作用与之前介绍的 DPO loss 中的温度系数作用一致。最后，对于LLM中使用KL散度使训练模型不偏离参考模型，我们直接给出公式。对给定的 $x$，
 
 $$
 D_{\mathrm{KL}}\!\big(\pi(\cdot|x)\,\|\,\pi_{\rm ref}(\cdot|x)\big)
 =\mathbb{E}_{y\sim \pi(\cdot|x)}
-\!\left[\log \frac{\pi(y|x)}{\pi_{\rm ref}(y|x)}\right].
+\left[\log \frac{\pi(y|x)}{\pi_{\rm ref}(y|x)}\right].
 $$
 
 #### 3.3.2 前置概念：BT偏好数据模型
 
-然而现实里，我们很难有显式 $r(x,y)$，但通常有**偏好对数据** $(x,y^+,y^-)$，即对同一 $x$，标注者认为“$y^+$ 胜过 $y^-$”。这时候可以使用一个常用模型——***Bradley–Terry Model***[1]，该公式原文有详细讲解[3]:
+然而在现实里，我们很难有显式且直观的奖励分数 $r(x,y)$ （所谓文无第一，武无第二？），但确实有对于某个输入回应的**偏好对数据** $(x,y^+,y^-)$，即对同一 $x$，我们认为“$y^+$ 胜过 $y^-$”。这时候可以使用一个我们之前提到过的模型——***Bradley–Terry Model*** [1]，该公式在 DPO 原文有详细讲解 [3]:
 
 $$
 \Pr(y^+ \succ y^- \mid x)\;=\;\sigma\!\big(r(x,y^+)-r(x,y^-)\big),
@@ -133,50 +152,56 @@ $$
 
 - 每个候选输出 $y$ 有一个“效用/得分” $r(x,y)$。
 - 如果两个候选 $y^+, y^-$ 拿来比较，我们假设它们的效用差 $r(x,y^+) - r(x,y^-)$ 决定了哪一个更好。
-- 为了把差值映射到 $[0,1]$ 之间的概率，用 sigmoid 函数。
+- 为了把差值映射到 $[0,1]$ 之间的概率，用 sigmoid 函数把他们效用差变为概率值。
 
-这个就是 pairwise logistic preference learning 的**标准写法**。其实，如果我们结合**SFT中交叉熵对于最大似然函数**的应用，就能更直观地理解(可选了解)：
+如果我们将其与 SFT 中熟悉的“交叉熵”联系起来，偏好学习的损失函数可以被赋予更严谨的统计学解释：
 
-1. **最大似然（MLE）目标**： 给定标注者的观察结果“$y^+$ 胜过 $y^-$”，我们希望最大化模型对该事件的概率：
+1. 最大似然目标 (MLE Objective)
 
-   $$
-   \max_\theta \;\;\log \Pr_\theta(y^+ \succ y^- \mid x)
-   = \max_\theta \;\;\log \sigma(r_\theta(x,y^+) - r_\theta(x,y^-)).
-   $$
+​	我们的目标是最大化观测数据的似然概率。给定数据集中的偏好对 $(x, y^+, y^-)$，我们希望参数 $\theta$ 能够最大化“$y^+$ 胜过 $y^-$”这一事件发生的概率。基于 Bradley-Terry 模型假设，该目标函数为：
+$$
+\max_\theta \mathbb{E}_{(x, y^+, y^-) \sim \mathcal{D}} \Big[ \log \Pr_\theta(y^+ \succ y^- \mid x) \Big] = \max_\theta \mathbb{E} \Big[ \log \sigma\big(r_\theta(x,y^+) - r_\theta(x,y^-)\big) \Big]
+$$
 
-2. **对数似然转损失**：取负号就是训练损失：
 
-   $$
-   \mathcal{L}(\theta) = -\log \sigma(r_\theta(x,y^+) - r_\theta(x,y^-)).
-   $$
+2. 负对数似然损失 (NLL Loss)
 
-3. **与交叉熵的等价性**：注意，这其实就是**二分类的交叉熵损失**：我们要区分“$y^+$ 优于 $y^-$”（标签=1）与“相反情况”（标签=0）。如果写成通用形式：
+​	在优化过程中，我们将“最大化对数似然”转化为“最小化负对数似然（Negative Log-Likelihood）”。这直接导出了标准的 Pairwise Ranking Loss：
+$$
+\mathcal{L}(\theta) = -\log \sigma\big(r_\theta(x,y^+) - r_\theta(x,y^-)\big)
+$$
 
-   $$
-   \mathcal{L}(\theta) = \text{CE}\Big(\sigma(r_\theta(x,y^+)-r_\theta(x,y^-)), \;1\Big),
-   $$
 
-   其中 CE 是二元交叉熵：
+3. 与二元交叉熵的等价性 (Equivalence to BCE)
 
-   $$
-   \mathcal{L}_{CE}(y, \hat{y}) = -\big[ y \log \hat{y} + (1-y)\log(1-\hat{y}) \big].
-   $$
+​	这是我们将视角统一。上述损失函数实际上就是 **二元交叉熵（Binary Cross-Entropy, BCE）** 的一种特例。我们可以将偏好预测视为一个**二分类问题**：
 
-   这里就可以理解， $\sigma(r_\theta(x,y^+)-r_\theta(x,y^-))$相当于**在输入 $x$ 下，模型判定候选输出 $y^+$ 优于 $y^-$ 的概率**。这个值越接近1越好。（因为是概率，所以最大就是1）
+- **输入**：一对样本 $(y^+, y^-)$ 的分差 $\Delta r$。
+- **预测**：模型给出的胜率概率 $\hat{p} = \sigma(\Delta r)$。
+- **标签**：真实观测结果 $y_{\text{label}} = 1$（即 $y^+$ 确实赢了）。
+
+​	回顾通用的 BCE 公式：
+$$
+\mathcal{L}_{\text{BCE}}(y, p) = -\big[ y \cdot \log p + (1-y) \cdot \log(1-p) \big]
+$$
+
+
+当我们将标签 $y_{\text{label}} = 1$ 代入时，右边的项 $(1-1)$ 消失，公式坍缩为：
+$$
+\mathcal{L}_{\text{BCE}}(1, \hat{p}) = -1 \cdot \log \hat{p} = -\log \sigma(\Delta r)
+$$
+
 
 #### 3.3.3 DPO loss 公式推导
 
 我们接下来正式进行推导。从原文中看，作者从强化学习微调阶段的目标函数（1）式中，分析得出在 KL 约束条件下，最大化奖励的**最优策略形状**（对每个固定的 $x$）：
 
 $$
-\pi_\tau(y\mid x)
-=\frac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,
-\exp\!\Big(\tfrac{1}{\beta} \, r(x,y)\Big),
+\pi_\tau(y\mid x)=\frac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\Big(\tfrac{1}{\beta} \, r(x,y)\Big),
 \tag{2}
 $$
 
 其中 $Z(x)=\sum_y \pi_{\text{ref}}(y\mid x)\exp(\tfrac{1}{\beta}r(x,y))$ 是配分函数(partition function)， 该项只随 $x$ 变，不随 $y$ 变，是归一化函数。为了让乘法变成加法，使得容易做**差分**消去配分函数同时更加稳定，两边取对数并移项，得到：
-
 $$
 r(x,y) = \beta \log \frac{\pi_\tau(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x).
 \tag{3}
@@ -187,8 +212,9 @@ p^*(y_1 \succ y_2 \mid x) \;=\; \sigma\!\big(r^*(x,y_1) - r^*(x,y_2)\big).
 \tag{4}
 $$
 
-把 (3) 代入到“奖励差”里（$r^*$ 用最优策略 $\pi^*$ 的表达），$\beta\log Z(x)$ 在做差时**抵消**，得到（由此可知配分函数被消除后对梯度也没有影响）：
 
+
+把 (3) 代入到“奖励差”里（$r^*$ 用最优策略 $\pi^*$ 的表达），$\beta\log Z(x)$ 在做差时**抵消**，得到（由此可知配分函数被消除后对梯度也没有影响）：
 $$
 p^*(y_1 \succ y_2 \mid x) = \sigma\!\Big(
 \beta \log \frac{\pi^*(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}
@@ -237,7 +263,7 @@ Again，**$\beta$ 大：更贴近参考；小：更敢改变，远离参考**。
 
 ---
 
-## 4. DPO 训练复现
+## 4. DPO 训练
 
 我们使用`torch`和`transformer`作了最小可执行的DPO算法，在这里我们列出loss计算的流程。对于测试阶段，我们的俄数据集需要包含正向偏好和负向偏好，类似于：
 
@@ -535,6 +561,8 @@ $$
 [5] https://huggingface.co/datasets/opencsg/UltraFeedback-chinese
 
 [6] Liu, T., Qin, Z., Wu, J., Shen, J., Khalman, M., Joshi, R., Zhao, Y., Saleh, M., Baumgartner, S., Liu, J., Liu, P.J., & Wang, X. (2024). LiPO: Listwise Preference Optimization through Learning-to-Rank. *ArXiv, abs/2402.01878*.
+
+[7] Ouyang, L., Wu, J., Jiang, X., Almeida, D., Wainwright, C., Mishkin, P., ... & Lowe, R. (2022). Training language models to follow instructions with human feedback. *Advances in neural information processing systems*, *35*, 27730-27744.
 
 
 ## Appendix

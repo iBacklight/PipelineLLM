@@ -897,7 +897,7 @@ Usability Rate: 1.000
 
 ## Appendix
 
-### SFTConfig vs. TrainingArguments
+### 1. SFTConfig vs. TrainingArguments
 
 **`TrainingArguments` 本身不提供 “assistant-only loss” 开关**；这个开关在 **`SFTConfig`/`SFTTrainer`** 里。
 
@@ -905,7 +905,7 @@ Usability Rate: 1.000
 
 
 
-### 显存
+### 2. 显存
 
 **算力在吃满，但模型和数据放得“太省”了**，导致显存没有被充分利用。按照下表进行debug。
 
@@ -929,7 +929,7 @@ Usability Rate: 1.000
 
 
 
-### 【重点必看】通过多种参数来确定实际的 Batch Size （实例论证）
+### 3. 【重点必看】通过多种参数来确定实际的 Batch Size （实例论证）
 
 Batch size直接与两个参数相关
 
@@ -1052,7 +1052,7 @@ Batch size直接与两个参数相关
 >        optimizer.zero_grad()
 >```
 
-### 微调以后，为什么模型丧失了多种语言的能力？
+### 4. 微调以后，为什么模型丧失了多种语言的能力？
 
 1. **数据分布单一**
    - 在 SFT 时只用中文（或特定任务）数据集。
